@@ -191,8 +191,9 @@ button:hover {
 
 .character-box {
   background: #fff;
-  width: 65vw;
-  height: 80vh;
+  /* Updated to be 20% smaller */
+  width: 52vw;
+  height: 64vh;
   border-radius: 15px;
   position: relative;
   color: #000;
@@ -241,7 +242,7 @@ button:hover {
   font-family: Candara;
   text-align: center;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  border-radius: 5px;
+  /* Removed border-radius for sharper corners */
 }
 
 /* ===== Overlay Chart (Container size determined by script.js) ===== */
