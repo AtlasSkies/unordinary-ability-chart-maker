@@ -1,171 +1,63 @@
-body {
-  font-family: Candara, sans-serif;
-  background: #f0f8fc;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 30px;
-  gap: 40px;
-  color: white;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UnOrdinary Power Chart Maker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h1>UnOrdinary Power Chart Maker</h1>
+      <input type="file" accept="image/*" id="imgInput">
+      <img id="uploadedImg" class="upload-img" alt="Uploaded Image">
+      <div class="info-box" id="infoDisplay">
+        <b>Name:</b> <span id="dispName">-</span><br>
+        <b>Ability:</b> <span id="dispAbility">-</span><br>
+        <b>Level:</b> <span id="dispLevel">-</span>
+      </div>
+      <div class="inputs">
+        <label>Name: <input type="text" id="name"></label>
+        <label>Ability: <input type="text" id="ability"></label>
+        <label>Level: <input type="text" id="level"></label>
+        <label>Power: <input type="number" id="power" step="0.1" min="0"></label>
+        <label>Speed: <input type="number" id="speed" step="0.1" min="0"></label>
+        <label>Trick: <input type="number" id="trick" step="0.1" min="0"></label>
+        <label>Recovery: <input type="number" id="recovery" step="0.1" min="0"></label>
+        <label>Defense: <input type="number" id="defense" step="0.1" min="0"></label>
+        <label>Ability Color: <input type="color" id="colorPicker" value="#92dfec"></label>
+        <button id="updateBtn">Update Chart</button>
+        <button id="viewBtn">View Character Chart</button>
+      </div>
+    </div>
 
-h1 {
-  text-align: center;
-  font-style: italic;
-  color: #333;
-}
+    <div class="chart-area">
+      <canvas id="radarChart1"></canvas>
+    </div>
+  </div>
 
-.container {
-  display: flex;
-  gap: 40px;
-  align-items: center;
-}
+  <!-- Overlay modal -->
+  <div id="overlay" class="overlay hidden">
+    <div id="characterBox" class="character-box">
+      <button id="closeBtn" class="close-btn">×</button>
+      <div class="image-section">
+        <img id="overlayImg" class="overlay-img" alt="Character Image">
+        <div class="text-box">
+          <b>Name:</b> <span id="overlayName">-</span><br>
+          <b>Ability:</b> <span id="overlayAbility">-</span><br>
+          <b>Level:</b> <span id="overlayLevel">-</span>
+        </div>
+      </div>
+      <div class="overlay-chart">
+        <canvas id="radarChart2"></canvas>
+      </div>
+      <button id="downloadBtn">Download Character Chart</button>
+    </div>
+  </div>
 
-.left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.upload-img {
-  width: 250px;
-  height: 250px;
-  border: 2px dashed #aaa;
-  border-radius: 10px;
-  object-fit: cover;
-  background-color: white;
-}
-
-.info-box {
-  background-color: white;
-  color: black;
-  border-radius: 8px;
-  padding: 10px 15px;
-  width: 250px;
-  line-height: 1.5;
-}
-
-.inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-label {
-  font-style: italic;
-  color: #333;
-}
-
-input[type="number"], input[type="text"] {
-  width: 150px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  padding: 4px;
-  font-family: Candara;
-}
-
-input[type="color"] {
-  border: none;
-  background: none;
-  width: 60px;
-  height: 40px;
-  cursor: pointer;
-}
-
-button {
-  margin-top: 10px;
-  padding: 6px 10px;
-  font-family: Candara;
-  background-color: #92dfec;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.chart-area {
-  position: relative;
-  width: 450px;
-  height: 450px;
-}
-
-/* Overlay Styles */
-.overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-
-.hidden { display: none; }
-
-.character-box {
-  background: #fff;
-  padding: 20px;
-  border: 3px solid #493e3b;
-  border-radius: 10px;
-  position: relative;
-  color: #000;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.close-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.image-section {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.overlay-img {
-  width: 250px;
-  height: 250px;
-  object-fit: cover;
-  border: 3px solid #493e3b;
-}
-
-.text-box {
-  position: absolute;
-  bottom: -5px;
-  width: 60%;
-  background: white;
-  border: 3px solid #493e3b;
-  padding: 8px;
-  font-family: Candara;
-  text-align: center;
-}
-
-.overlay-chart {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60%;
-  height: 60%;
-}
-
-#downloadBtn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: #92dfec;
-  border: none;
-  border-radius: 5px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
+  <script src="script.js"></script>
+</body>
+</html>
