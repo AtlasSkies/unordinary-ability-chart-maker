@@ -5,7 +5,7 @@ let chartColor = '#92dfec';
 // Pre-defined center coordinates for the main chart based on its container size (450x450 max)
 const CHART1_CENTER = { x: 225, y: 225 }; 
 const CHART_SCALE_FACTOR = 0.8;
-// New multiplier for the Character Chart (Chart 2) container size
+// Multiplier for the Character Chart (Chart 2) container size (1.5x larger)
 const CHART_SIZE_MULTIPLIER = 1.5; 
 
 function hexToRGBA(hex, alpha) {
@@ -133,8 +133,9 @@ const outlinedLabelsPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     
-    ctx.strokeStyle = 'white'; 
-    ctx.fillStyle = chartColor; 
+    // CORRECTION: Outline color is the selected ability color, fill is white
+    ctx.strokeStyle = chartColor; 
+    ctx.fillStyle = 'white'; 
     ctx.lineWidth = 4;
 
     labels.forEach((label, i) => {
@@ -280,7 +281,7 @@ viewBtn.addEventListener('click', () => {
     // Calculate required size for alignment (Image Height + Text Box Height)
     const targetVerticalSpan = imgHeight + textHeight; 
     
-    // APPLY 1.5x MULTIPLIER to the calculated span
+    // APPLY 1.5x MULTIPLIER to the calculated span (Requested size increase)
     const targetSize = targetVerticalSpan * CHART_SIZE_MULTIPLIER;
 
     // Apply the calculated size to the chart container
