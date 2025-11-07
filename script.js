@@ -2,11 +2,13 @@ let radar1, radar2;
 let radar2Ready = false;
 let chartColor = '#92dfec';
 
-// ↓ smaller chart scale but same center
-const CHART2_CENTER_DX = 0;
-const CHART2_CENTER_DY = 0;
-const CHART_SCALE_FACTOR = 0.75; // 25% smaller
+/* === Constants === */
+const CHART1_CENTER = { x: 225, y: 225 }; // center of main 450x450 chart
+const CHART2_CENTER = { x: 250, y: 250 }; // center of overlay 500x500 chart
+const CHART1_RADIUS = 160;
+const CHART2_RADIUS = 170;
 
+/* === Utility === */
 function hexToRGBA(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -14,109 +16,91 @@ function hexToRGBA(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* === Center & radius adjustment === */
+/* === Custom Center & Background === */
 const fixedCenterPlugin = {
-  id: 'fixedCenter',
-  afterLayout(chart) {
-    const opt = chart.config.options.fixedCenter;
-    if (!opt?.enabled) return;
-    const r = chart.scales.r;
-    r.xCenter += (opt.dx ?? 0);
-    r.yCenter += (opt.dy ?? 0);
-    r.drawingArea *= CHART_SCALE_FACTOR;
-  }
-};
-
-/* === Pentagon background + spokes === */
-const radarBackgroundPlugin = {
-  id: 'customPentagonBackground',
+  id: 'fixedCenterPlugin',
   beforeDraw(chart) {
-    const opts = chart.config.options.customBackground;
+    const opts = chart.config.options.fixedCenter;
     if (!opts?.enabled) return;
-    const r = chart.scales.r;
+
     const ctx = chart.ctx;
-    const cx = r.xCenter;
-    const cy = r.yCenter;
-    const radius = r.drawingArea;
-    const N = chart.data.labels.length;
+    const labels = chart.data.labels;
+    const cx = opts.centerX;
+    const cy = opts.centerY;
+    const radius = opts.radius;
+    const N = labels.length;
     const start = -Math.PI / 2;
 
-    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    gradient.addColorStop(0, '#f8fcff');
-    gradient.addColorStop(0.25, '#92dfec');
-    gradient.addColorStop(1, '#92dfec');
+    // Draw gradient background
+    if (opts.background) {
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0, "#f8fcff");
+      grad.addColorStop(0.25, "#92dfec");
+      grad.addColorStop(1, "#92dfec");
 
-    ctx.save();
-    ctx.beginPath();
-    for (let i = 0; i < N; i++) {
-      const a = start + (i * 2 * Math.PI / N);
-      const x = cx + radius * Math.cos(a);
-      const y = cy + radius * Math.sin(a);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    ctx.strokeStyle = '#184046';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const a = start + (i * 2 * Math.PI / N);
+        const x = cx + radius * Math.cos(a);
+        const y = cy + radius * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = "#184046";
+      ctx.lineWidth = 3;
+      ctx.stroke();
 
-    // Spokes
-    ctx.beginPath();
-    for (let i = 0; i < N; i++) {
-      const a = start + (i * 2 * Math.PI / N);
-      const x = cx + radius * Math.cos(a);
-      const y = cy + radius * Math.sin(a);
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(x, y);
+      // spokes
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const a = start + (i * 2 * Math.PI / N);
+        const x = cx + radius * Math.cos(a);
+        const y = cy + radius * Math.sin(a);
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "#6db5c0";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
     }
-    ctx.strokeStyle = '#6db5c0';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
+
+    // store center/radius for later label drawing
+    chart.centerPoint = { cx, cy, radius };
   }
 };
 
-/* === Axis Labels === */
+/* === Axis Labels with Outline === */
 const outlinedLabelsPlugin = {
   id: 'outlinedLabels',
   afterDraw(chart) {
-    if (!chart?.config?.options?.outlinedLabels?.enabled) return;
     const ctx = chart.ctx;
-    const r = chart.scales.r;
     const labels = chart.data.labels;
-    const cx = r.xCenter;
-    const cy = r.yCenter;
-    const radius = r.drawingArea + 55;
+    const { cx, cy, radius } = chart.centerPoint;
     const base = -Math.PI / 2;
-
     ctx.save();
-    ctx.resetTransform();
-    ctx.beginPath();
-    ctx.rect(0, 0, chart.canvas.width, chart.canvas.height);
-    ctx.clip();
-
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     ctx.lineWidth = 4;
     ctx.strokeStyle = chartColor;
     ctx.fillStyle = 'white';
-
     labels.forEach((label, i) => {
-      const a = base + (i * 2 * Math.PI / labels.length);
-      const x = cx + radius * Math.cos(a);
-      const y = cy + radius * Math.sin(a);
+      const angle = base + (i * 2 * Math.PI / labels.length);
+      const x = cx + (radius + 35) * Math.cos(angle);
+      const y = cy + (radius + 35) * Math.sin(angle);
       ctx.strokeText(label, x, y);
       ctx.fillText(label, x, y);
     });
-
     ctx.restore();
   }
 };
 
 /* === Chart Factory === */
-function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false, fixed = false) {
+function makeRadar(ctx, fixedOpts) {
   return new Chart(ctx, {
     type: 'radar',
     data: {
@@ -128,40 +112,43 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
         borderWidth: 2,
         pointBackgroundColor: '#fff',
         pointBorderColor: '#92dfec',
-        pointRadius: showPoints ? 5 : 0
+        pointRadius: 5
       }]
     },
     options: {
       responsive: false,
       maintainAspectRatio: false,
-      layout: { padding: { top: 90, right: 90, bottom: 90, left: 90 } },
       scales: {
         r: {
           grid: { display: false },
-          angleLines: { color: '#6db5c0', lineWidth: 1 },
+          angleLines: { display: false },
           suggestedMin: 0,
-          suggestedMax: maxCap ?? undefined,
+          suggestedMax: 10,
           ticks: { display: false },
           pointLabels: { display: false }
         }
       },
-      customBackground: { enabled: withBackground },
-      outlinedLabels: { enabled: true },
-      fixedCenter: { enabled: fixed, dx: CHART2_CENTER_DX, dy: CHART2_CENTER_DY },
+      fixedCenter: fixedOpts,
       plugins: { legend: { display: false } }
     },
-    plugins: [fixedCenterPlugin, radarBackgroundPlugin, outlinedLabelsPlugin]
+    plugins: [fixedCenterPlugin, outlinedLabelsPlugin]
   });
 }
 
 /* === Chart 1 === */
 window.addEventListener('load', () => {
   const ctx1 = document.getElementById('radarChart1').getContext('2d');
-  radar1 = makeRadar(ctx1, null, true, false, false);
+  radar1 = makeRadar(ctx1, {
+    enabled: true,
+    centerX: CHART1_CENTER.x,
+    centerY: CHART1_CENTER.y,
+    radius: CHART1_RADIUS,
+    background: false
+  });
 });
 
-/* === Update === */
-document.getElementById('updateBtn').addEventListener('click', () => {
+/* === Update Chart === */
+updateBtn.addEventListener('click', () => {
   const vals = [
     parseFloat(powerInput.value) || 0,
     parseFloat(speedInput.value) || 0,
@@ -195,13 +182,19 @@ viewBtn.addEventListener('click', () => {
   overlay.classList.remove('hidden');
   overlayImg.src = uploadedImg.src;
   overlayName.textContent = nameInput.value || '-';
-  overlayAbility.textContent = abilityInput.value || '-';
+  overlayAbility.textContent = nameInput.value || '-';
   overlayLevel.textContent = levelInput.value || '-';
 
   setTimeout(() => {
     const ctx2 = document.getElementById('radarChart2').getContext('2d');
     if (!radar2Ready) {
-      radar2 = makeRadar(ctx2, 10, false, true, true);
+      radar2 = makeRadar(ctx2, {
+        enabled: true,
+        centerX: CHART2_CENTER.x,
+        centerY: CHART2_CENTER.y,
+        radius: CHART2_RADIUS,
+        background: true
+      });
       radar2Ready = true;
     } else radar2.resize();
 
@@ -223,7 +216,7 @@ viewBtn.addEventListener('click', () => {
 
 closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
 
-/* === Download === */
+/* === Download (no buttons) === */
 downloadBtn.addEventListener('click', () => {
   downloadBtn.style.visibility = 'hidden';
   closeBtn.style.visibility = 'hidden';
