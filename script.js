@@ -2,12 +2,11 @@ let radar1, radar2;
 let radar2Ready = false;
 let chartColor = '#92dfec';
 
-// scale so chart ≈75% of original
+// ↓ smaller chart scale but same center
 const CHART2_CENTER_DX = 0;
 const CHART2_CENTER_DY = 0;
-const CHART_SCALE_FACTOR = 0.93;
+const CHART_SCALE_FACTOR = 0.75; // 25% smaller
 
-/* === Helper === */
 function hexToRGBA(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -78,7 +77,7 @@ const radarBackgroundPlugin = {
   }
 };
 
-/* === Outlined Axis Labels === */
+/* === Axis Labels === */
 const outlinedLabelsPlugin = {
   id: 'outlinedLabels',
   afterDraw(chart) {
@@ -88,7 +87,7 @@ const outlinedLabelsPlugin = {
     const labels = chart.data.labels;
     const cx = r.xCenter;
     const cy = r.yCenter;
-    const radius = r.drawingArea + 60;
+    const radius = r.drawingArea + 55;
     const base = -Math.PI / 2;
 
     ctx.save();
@@ -104,13 +103,13 @@ const outlinedLabelsPlugin = {
     ctx.strokeStyle = chartColor;
     ctx.fillStyle = 'white';
 
-    for (let i = 0; i < labels.length; i++) {
-      const angle = base + (i * 2 * Math.PI / labels.length);
-      const x = cx + radius * Math.cos(angle);
-      const y = cy + radius * Math.sin(angle);
-      ctx.strokeText(labels[i], x, y);
-      ctx.fillText(labels[i], x, y);
-    }
+    labels.forEach((label, i) => {
+      const a = base + (i * 2 * Math.PI / labels.length);
+      const x = cx + radius * Math.cos(a);
+      const y = cy + radius * Math.sin(a);
+      ctx.strokeText(label, x, y);
+      ctx.fillText(label, x, y);
+    });
 
     ctx.restore();
   }
@@ -135,7 +134,7 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
     options: {
       responsive: false,
       maintainAspectRatio: false,
-      layout: { padding: { top: 80, right: 80, bottom: 80, left: 80 } },
+      layout: { padding: { top: 90, right: 90, bottom: 90, left: 90 } },
       scales: {
         r: {
           grid: { display: false },
@@ -186,23 +185,18 @@ document.getElementById('updateBtn').addEventListener('click', () => {
     radar2.update();
   }
 
-  document.getElementById('dispName').textContent = nameInput.value || '-';
-  document.getElementById('dispAbility').textContent = abilityInput.value || '-';
-  document.getElementById('dispLevel').textContent = levelInput.value || '-';
+  dispName.textContent = nameInput.value || '-';
+  dispAbility.textContent = abilityInput.value || '-';
+  dispLevel.textContent = levelInput.value || '-';
 });
 
 /* === Overlay === */
-const overlay = document.getElementById('overlay');
-const viewBtn = document.getElementById('viewBtn');
-const closeBtn = document.getElementById('closeBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-
 viewBtn.addEventListener('click', () => {
   overlay.classList.remove('hidden');
-  document.getElementById('overlayImg').src = document.getElementById('uploadedImg').src;
-  document.getElementById('overlayName').textContent = nameInput.value || '-';
-  document.getElementById('overlayAbility').textContent = abilityInput.value || '-';
-  document.getElementById('overlayLevel').textContent = levelInput.value || '-';
+  overlayImg.src = uploadedImg.src;
+  overlayName.textContent = nameInput.value || '-';
+  overlayAbility.textContent = abilityInput.value || '-';
+  overlayLevel.textContent = levelInput.value || '-';
 
   setTimeout(() => {
     const ctx2 = document.getElementById('radarChart2').getContext('2d');
@@ -229,11 +223,11 @@ viewBtn.addEventListener('click', () => {
 
 closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
 
-/* === Download (no close button in PNG) === */
+/* === Download === */
 downloadBtn.addEventListener('click', () => {
   downloadBtn.style.visibility = 'hidden';
   closeBtn.style.visibility = 'hidden';
-  html2canvas(document.getElementById('characterBox')).then(canvas => {
+  html2canvas(characterBox).then(canvas => {
     const link = document.createElement('a');
     link.download = 'character_chart.png';
     link.href = canvas.toDataURL();
@@ -244,12 +238,10 @@ downloadBtn.addEventListener('click', () => {
 });
 
 /* === Upload === */
-document.getElementById('imgInput').addEventListener('change', e => {
+imgInput.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById('uploadedImg').src = ev.target.result;
-  };
+  reader.onload = ev => { uploadedImg.src = ev.target.result; };
   reader.readAsDataURL(file);
 });
