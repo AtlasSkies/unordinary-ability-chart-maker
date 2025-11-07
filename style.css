@@ -89,6 +89,7 @@ button {
   position: relative;
   width: 450px;
   height: 450px;
+  /* No background for main chart */
 }
 
 /* Overlay */
@@ -114,6 +115,7 @@ button {
   color: #000;
   display: flex;
   align-items: center;
+  justify-content: space-around;
   gap: 40px;
   overflow: hidden;
   padding: 20px;
@@ -163,8 +165,7 @@ button {
   align-items: center;
   width: 45%;
   height: 60%;
-  border-radius: 10px;
-  background: radial-gradient(circle at center, #f8fcff 0%, #92dfec 25%, #92dfec 100%);
+  position: relative;
 }
 
 #downloadBtn {
