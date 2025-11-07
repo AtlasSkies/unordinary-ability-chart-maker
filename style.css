@@ -16,14 +16,14 @@ body {
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-  position: relative; /* For info-container positioning */
+  position: relative;
 }
 
 h1 {
   text-align: center;
   font-style: italic;
   color: #333;
-  margin: 0; /* Remove default margin */
+  margin: 0;
 }
 
 .info-container {
@@ -94,7 +94,6 @@ h1 {
   min-width: 300px;
   flex: 1 1 350px;
 }
-/* ... (rest of style.css remains the same from the previous correction) ... */
 
 .upload-img {
   width: clamp(180px, 25vw, 250px);
@@ -244,12 +243,13 @@ button:hover {
   border-radius: 5px;
 }
 
-/* ===== Overlay Chart ===== */
+/* ===== Overlay Chart (Container size determined by script.js) ===== */
 .overlay-chart {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: clamp(280px, 40vw, 450px);
+  /* Starting size; overridden by script.js */
+  width: clamp(280px, 40vw, 450px); 
   height: clamp(280px, 40vw, 450px);
   position: relative;
   z-index: 2; 
