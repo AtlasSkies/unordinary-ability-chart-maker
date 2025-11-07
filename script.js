@@ -12,7 +12,37 @@ const recoveryInput = document.getElementById('recoveryInput');
 const defenseInput = document.getElementById('defenseInput');
 const colorPicker = document.getElementById('colorPicker');
 
-// Plugin for gradient background + proper alignment
+/* =========================
+   CENTER CONTROL (Chart 2)
+   =========================
+   You can tweak these to nudge the chart’s true center.
+   They are in CANVAS PIXELS relative to the radar canvas.
+*/
+const CHART2_CENTER_DX = 0;     // left/right nudge
+const CHART2_CENTER_DY = 12;    // downwards nudge
+
+/* ===== Plugin: fix the radar scale center to a specific anchor ===== */
+const fixedCenterPlugin = {
+  id: 'fixedCenter',
+  afterLayout(chart) {
+    const opt = chart?.config?.options?.fixedCenter;
+    if (!opt?.enabled) return;
+
+    const rScale = chart.scales.r;
+    if (!rScale) return;
+
+    // Default to computed center if x/y not provided, then apply dx/dy.
+    const canvas = chart.canvas;
+    const desiredX = (opt.x ?? rScale.xCenter) + (opt.dx ?? 0);
+    const desiredY = (opt.y ?? rScale.yCenter) + (opt.dy ?? 0);
+
+    // Overwrite the internal center used by the scale (and thus the dataset)
+    rScale.xCenter = desiredX;
+    rScale.yCenter = desiredY;
+  }
+};
+
+/* ===== Plugin: draw gradient pentagon + spokes using the same center ===== */
 const radarBackgroundPlugin = {
   id: 'customPentagonBackground',
   beforeDraw(chart) {
@@ -21,22 +51,23 @@ const radarBackgroundPlugin = {
 
     const rScale = chart.scales.r;
     const ctx = chart.ctx;
-    const centerX = rScale.xCenter;
-    const centerY = rScale.yCenter + opts.offsetY; // offset both chart + background
-    const radius = rScale.drawingArea;
 
-    // background gradient
+    // Use the scale's (possibly overridden) true center/radius
+    const centerX = rScale.xCenter;
+    const centerY = rScale.yCenter;
+    const radius = rScale.drawingArea;
+    const totalPoints = chart.data.labels.length;
+    const angleOffset = -Math.PI / 2; // top
+
+    // Gradient (f8fcff -> 92dfec @ 25%)
     const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
     gradient.addColorStop(0, '#f8fcff');
     gradient.addColorStop(0.25, '#92dfec');
     gradient.addColorStop(1, '#92dfec');
 
-    const totalPoints = chart.data.labels.length;
-    const angleOffset = -Math.PI / 2; // top
-
     ctx.save();
 
-    // Pentagon background
+    // Pentagon background (max = 10 boundary)
     ctx.beginPath();
     for (let i = 0; i < totalPoints; i++) {
       const angle = angleOffset + (i * 2 * Math.PI / totalPoints);
@@ -51,7 +82,7 @@ const radarBackgroundPlugin = {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Spokes
+    // Spokes meeting corners
     ctx.beginPath();
     for (let i = 0; i < totalPoints; i++) {
       const angle = angleOffset + (i * 2 * Math.PI / totalPoints);
@@ -63,20 +94,25 @@ const radarBackgroundPlugin = {
     ctx.strokeStyle = '#6db5c0';
     ctx.lineWidth = 1;
     ctx.stroke();
+
     ctx.restore();
   }
 };
 
-// Plugin for outlined axis text
+/* ===== Plugin: outlined (stroke) + white-filled point labels ===== */
 const outlinedLabelsPlugin = {
   id: 'outlinedLabels',
   afterDraw(chart) {
+    if (!chart?.config?.options?.outlinedLabels?.enabled) return;
+
     const ctx = chart.ctx;
     const rScale = chart.scales.r;
     const labels = chart.data.labels;
     const total = labels.length;
     const centerX = rScale.xCenter;
-    const centerY = rScale.yCenter + (chart.config.options.customBackground?.offsetY || 0);
+    const centerY = rScale.yCenter;
+
+    // place labels slightly beyond the radius
     const radius = rScale.drawingArea + 20;
     const baseAngle = -Math.PI / 2;
 
@@ -85,8 +121,8 @@ const outlinedLabelsPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 16px Candara';
     ctx.lineWidth = 4;
-    ctx.strokeStyle = chartColor;
-    ctx.fillStyle = 'white';
+    ctx.strokeStyle = chartColor;  // outline = chosen ability color
+    ctx.fillStyle = 'white';       // inside = white
 
     for (let i = 0; i < total; i++) {
       const angle = baseAngle + (i * 2 * Math.PI / total);
@@ -96,19 +132,18 @@ const outlinedLabelsPlugin = {
       ctx.strokeText(label, x, y);
       ctx.fillText(label, x, y);
     }
-
     ctx.restore();
   }
 };
 
-function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false) {
+function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false, useFixedCenter = false) {
   return new Chart(ctx, {
     type: 'radar',
     data: {
       labels: ['Power', 'Speed', 'Trick', 'Recovery', 'Defense'],
       datasets: [{
         data: [0, 0, 0, 0, 0],
-        backgroundColor: 'transparent',
+        backgroundColor: 'transparent', // set on update
         borderColor: '#92dfec',
         borderWidth: 2,
         pointBackgroundColor: '#fff',
@@ -124,26 +159,32 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
           suggestedMin: 0,
           suggestedMax: maxCap ?? undefined,
           ticks: { display: false },
-          pointLabels: { display: false } // we'll draw custom labels instead
+          pointLabels: { display: false } // we draw our own labels
         }
       },
-      customBackground: {
-        enabled: withBackground,
-        offsetY: withBackground ? 10 : 0 // shift chart+data down a bit
+      customBackground: { enabled: withBackground },
+      outlinedLabels: { enabled: true },
+      fixedCenter: {
+        enabled: useFixedCenter,
+        // anchor at the natural center, but nudge by dx/dy
+        x: null,
+        y: null,
+        dx: CHART2_CENTER_DX,
+        dy: CHART2_CENTER_DY
       },
       plugins: { legend: { display: false } },
       animation: { duration: 400 },
       responsive: true,
       maintainAspectRatio: false
     },
-    plugins: [radarBackgroundPlugin, outlinedLabelsPlugin]
+    plugins: [fixedCenterPlugin, radarBackgroundPlugin, outlinedLabelsPlugin]
   });
 }
 
-// Chart 1 – transparent background
+/* ========== Chart 1 (main) – transparent background ========== */
 window.addEventListener('load', () => {
   const ctx1 = document.getElementById('radarChart1').getContext('2d');
-  radar1 = makeRadar(ctx1, null, true, false);
+  radar1 = makeRadar(ctx1, null, true, false, false);
 });
 
 function hexToRGBA(hex, alpha) {
@@ -153,7 +194,7 @@ function hexToRGBA(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// Update button
+/* ========== Update button ========== */
 document.getElementById('updateBtn').addEventListener('click', () => {
   const vals = [
     parseFloat(powerInput.value) || 0,
@@ -183,7 +224,7 @@ document.getElementById('updateBtn').addEventListener('click', () => {
   document.getElementById('dispLevel').textContent = levelInput.value || '-';
 });
 
-// Overlay
+/* ========== Overlay controls ========== */
 const overlay = document.getElementById('overlay');
 const viewBtn = document.getElementById('viewBtn');
 const closeBtn = document.getElementById('closeBtn');
@@ -192,7 +233,7 @@ const downloadBtn = document.getElementById('downloadBtn');
 viewBtn.addEventListener('click', () => {
   overlay.classList.remove('hidden');
 
-  document.getElementById('overlayImg').src = document.getElementById('uploadedImg').src;
+  document.getElementById('overlayImg').src = document.getElementById('uploadedImg').src || '';
   document.getElementById('overlayName').textContent = nameInput.value || '-';
   document.getElementById('overlayAbility').textContent = abilityInput.value || '-';
   document.getElementById('overlayLevel').textContent = levelInput.value || '-';
@@ -200,9 +241,12 @@ viewBtn.addEventListener('click', () => {
   setTimeout(() => {
     const ctx2 = document.getElementById('radarChart2').getContext('2d');
     if (!radar2Ready) {
-      radar2 = makeRadar(ctx2, 10, false, true);
+      // withBackground + useFixedCenter TRUE for Chart 2
+      radar2 = makeRadar(ctx2, 10, false, true, true);
       radar2Ready = true;
-    } else radar2.resize();
+    } else {
+      radar2.resize();
+    }
 
     const vals = [
       parseFloat(powerInput.value) || 0,
@@ -231,7 +275,7 @@ downloadBtn.addEventListener('click', () => {
   });
 });
 
-// Image upload
+/* ========== Image upload ========== */
 document.getElementById('imgInput').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
