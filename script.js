@@ -1,6 +1,5 @@
 let radar1, radar2;
 let radar2Ready = false;
-// Initial chart color, will be updated from color picker
 let chartColor = '#92dfec';
 
 // Pre-defined center coordinates for the main chart based on its container size (450x450 max)
@@ -22,13 +21,11 @@ const fixedCenterPlugin = {
     if (!opt?.enabled) return;
     const r = chart.scales.r;
     
-    // Set center if provided (for Chart 1)
     if (opt.centerX && opt.centerY) {
       r.xCenter = opt.centerX;
       r.yCenter = opt.centerY;
     }
     
-    // Scale down drawing area relative to the total available space
     r.drawingArea *= CHART_SCALE_FACTOR;
   }
 };
@@ -36,7 +33,8 @@ const fixedCenterPlugin = {
 /* === Pentagon background + spokes (Overlay Chart) === */
 const radarBackgroundPlugin = {
   id: 'customPentagonBackground',
-  beforeDraw(chart) {
+  // Draw the background fill BEFORE the dataset
+  beforeDatasetsDraw(chart) {
     const opts = chart.config.options.customBackground;
     if (!opts?.enabled) return;
     const r = chart.scales.r;
@@ -47,7 +45,7 @@ const radarBackgroundPlugin = {
     const N = chart.data.labels.length;
     const start = -Math.PI / 2;
     
-    // Radial Gradient
+    // Radial Gradient (Fill)
     const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
     gradient.addColorStop(0, '#f8fcff');
     gradient.addColorStop(0.25, '#92dfec');
@@ -55,7 +53,7 @@ const radarBackgroundPlugin = {
     
     ctx.save();
     
-    // Draw Pentagon Shape (background)
+    // Draw Pentagon Shape (background fill)
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const a = start + (i * 2 * Math.PI / N);
@@ -67,12 +65,24 @@ const radarBackgroundPlugin = {
     ctx.fillStyle = gradient;
     ctx.fill();
     
-    // Outer Line
-    ctx.strokeStyle = '#184046';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.restore();
+  },
+  
+  // Draw the spokes and outer border (outline) AFTER the dataset is drawn (on top of it)
+  afterDatasetsDraw(chart) {
+    const opts = chart.config.options.customBackground;
+    if (!opts?.enabled) return;
+    const r = chart.scales.r;
+    const ctx = chart.ctx;
+    const cx = r.xCenter;
+    const cy = r.yCenter;
+    const radius = r.drawingArea;
+    const N = chart.data.labels.length;
+    const start = -Math.PI / 2;
     
-    // Spokes
+    ctx.save();
+    
+    // Draw Spokes
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const a = start + (i * 2 * Math.PI / N);
@@ -83,6 +93,19 @@ const radarBackgroundPlugin = {
     }
     ctx.strokeStyle = '#6db5c0';
     ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Draw Pentagon Outline
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const a = start + (i * 2 * Math.PI / N);
+      const x = cx + radius * Math.cos(a);
+      const y = cy + radius * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = '#184046';
+    ctx.lineWidth = 3;
     ctx.stroke();
     
     ctx.restore();
@@ -98,8 +121,8 @@ const outlinedLabelsPlugin = {
     const labels = chart.data.labels;
     const cx = r.xCenter;
     const cy = r.yCenter;
-    // Calculate a dynamic radius for label placement outside the chart
-    // A little past the chart's total drawing area + the max label length spacing
+    
+    // Adjust label radius for better positioning outside the chart area
     const radius = r.drawingArea * 1.05 + 15; 
     const base = -Math.PI / 2;
     
@@ -108,7 +131,6 @@ const outlinedLabelsPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     
-    // Use the global updated chartColor variable
     ctx.strokeStyle = 'white'; 
     ctx.fillStyle = chartColor; 
     ctx.lineWidth = 4;
@@ -118,9 +140,7 @@ const outlinedLabelsPlugin = {
       const x = cx + radius * Math.cos(angle);
       const y = cy + radius * Math.sin(angle);
       
-      // Draw white outline
       ctx.strokeText(label, x, y);
-      // Draw color fill
       ctx.fillText(label, x, y);
     });
     ctx.restore();
@@ -136,11 +156,12 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
       datasets: [{
         data: [0, 0, 0, 0, 0],
         backgroundColor: 'transparent',
-        borderColor: chartColor, // Use global color
+        borderColor: chartColor, 
         borderWidth: 2,
         pointBackgroundColor: '#fff',
-        pointBorderColor: chartColor, // Use global color
-        pointRadius: showPoints ? 5 : 0
+        pointBorderColor: chartColor, 
+        pointRadius: showPoints ? 5 : 0,
+        order: 1 
       }]
     },
     options: {
@@ -151,14 +172,12 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
           grid: { display: false },
           angleLines: { color: '#6db5c0', lineWidth: 1 },
           suggestedMin: 0,
-          // Set suggestedMax to 10 for better scaling consistency in Chart 1
           suggestedMax: maxCap ?? 10, 
           ticks: { display: false },
-          // Must be true for Chart.js to calculate the padding for the point labels
           pointLabels: { 
             display: true, 
             font: { size: 16 },
-            color: 'transparent' // Hide default labels, let plugin draw them
+            color: 'transparent' 
           } 
         }
       },
@@ -200,9 +219,7 @@ const uploadedImg = document.getElementById('uploadedImg');
 /* === Chart 1 (Main) Initialization === */
 window.addEventListener('load', () => {
   const ctx1 = document.getElementById('radarChart1').getContext('2d');
-  // Pass null for maxCap so it uses the default (10) set in makeRadar, and uses fixed center
   radar1 = makeRadar(ctx1, null, true, false, CHART1_CENTER); 
-  // Initialize chartColor with picker value
   chartColor = colorPicker.value;
 });
 
@@ -216,10 +233,8 @@ updateBtn.addEventListener('click', () => {
     +defenseInput.value || 0
   ];
   
-  // Cap the values at 10 for the overlay chart (radar2) 
   const capped = vals.map(v => Math.min(v, 10)); 
   
-  // Get the selected color
   chartColor = colorPicker.value;
   const fill = hexToRGBA(chartColor, 0.75);
 
@@ -238,7 +253,6 @@ updateBtn.addEventListener('click', () => {
     radar2.update();
   }
 
-  // Update info box on the main page
   dispName.textContent = nameInput.value || '-';
   dispAbility.textContent = abilityInput.value || '-';
   dispLevel.textContent = levelInput.value || '-';
@@ -246,38 +260,37 @@ updateBtn.addEventListener('click', () => {
 
 /* === Overlay controls === */
 viewBtn.addEventListener('click', () => {
-  // Update overlay info
   overlay.classList.remove('hidden');
   overlayImg.src = uploadedImg.src;
   overlayName.textContent = nameInput.value || '-';
   overlayAbility.textContent = abilityInput.value || '-';
   overlayLevel.textContent = levelInput.value || '-';
 
-  // Timeout to ensure the DOM elements (especially the overlay chart's container) have rendered 
-  // and have their correct size before Chart.js tries to draw.
   setTimeout(() => {
     const img = document.getElementById('overlayImg');
     const textBox = document.querySelector('.text-box');
     const overlayChart = document.querySelector('.overlay-chart');
     
-    // Use clientHeight for the dynamic height calculation
-    const imgHeight = img.clientHeight; 
-    const textHeight = textBox.clientHeight;
-    const totalHeight = imgHeight + textHeight;
-    // Dynamic chart size based on image + text box height
-    const targetSize = totalHeight * 0.8; 
+    // Force a redraw to get accurate dimensions
+    const imgHeight = img.offsetHeight; 
+    const textHeight = textBox.offsetHeight;
+    
+    // Calculation to make chart roughly span image height + text box height (for sizing requested)
+    const targetVerticalSpan = imgHeight + textHeight; 
+    const targetSize = targetVerticalSpan;
 
     // Apply the calculated size to the chart container
     overlayChart.style.height = `${targetSize}px`;
     overlayChart.style.width = `${targetSize}px`;
 
     const ctx2 = document.getElementById('radarChart2').getContext('2d');
+    
+    // Initialize or resize Chart 2
     if (!radar2Ready) {
       // Initialize Chart 2: Cap at 10, no points, with background, dynamic center
       radar2 = makeRadar(ctx2, 10, false, true, { x: targetSize / 2, y: targetSize / 2 });
       radar2Ready = true;
     } else {
-      // If already initialized, just resize
       radar2.resize(); 
     }
 
@@ -302,18 +315,15 @@ closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
 
 /* === Download (hide buttons before capture) === */
 downloadBtn.addEventListener('click', () => {
-  // Hide buttons before screenshot
   downloadBtn.style.visibility = 'hidden';
   closeBtn.style.visibility = 'hidden';
   
-  // Use html2canvas to capture the characterBox
   html2canvas(characterBox, { scale: 2 }).then(canvas => {
     const link = document.createElement('a');
     link.download = (nameInput.value || 'UnOrdinary_Character') + '_chart.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
     
-    // Restore buttons after download
     downloadBtn.style.visibility = 'visible';
     closeBtn.style.visibility = 'visible';
   });
