@@ -1,162 +1,180 @@
-let radar1, radar2;
-let radar2Ready = false;
-let chartColor = '#92dfec';
-
-// Inputs
-const nameInput = document.getElementById('nameInput');
-const abilityInput = document.getElementById('abilityInput');
-const levelInput = document.getElementById('levelInput');
-const powerInput = document.getElementById('powerInput');
-const speedInput = document.getElementById('speedInput');
-const trickInput = document.getElementById('trickInput');
-const recoveryInput = document.getElementById('recoveryInput');
-const defenseInput = document.getElementById('defenseInput');
-const colorPicker = document.getElementById('colorPicker');
-
-// Chart builder
-function makeRadar(ctx, maxCap = null, showPoints = true) {
-  const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, ctx.canvas.width / 2);
-  gradient.addColorStop(0, '#f8fcff');
-  gradient.addColorStop(0.25, '#92dfec');
-  gradient.addColorStop(1, '#92dfec');
-
-  return new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: ['Power', 'Speed', 'Trick', 'Recovery', 'Defense'],
-      datasets: [{
-        data: [0, 0, 0, 0, 0],
-        backgroundColor: gradient,
-        borderColor: '#92dfec',
-        borderWidth: 2,
-        pointBackgroundColor: '#fff',
-        pointBorderColor: '#92dfec',
-        pointRadius: showPoints ? 5 : 0
-      }]
-    },
-    options: {
-      scales: {
-        r: {
-          grid: { display: false },
-          angleLines: { color: '#6db5c0', lineWidth: 1 },
-          suggestedMin: 0,
-          suggestedMax: maxCap ?? undefined,
-          ticks: { display: false },
-          pointLabels: {
-            color: () => chartColor,
-            font: { family: 'Candara', style: 'italic', size: 16 }
-          }
-        }
-      },
-      plugins: { legend: { display: false } },
-      animation: { duration: 400 },
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  });
+body {
+  font-family: Candara, sans-serif;
+  background: #f0f8fc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px;
+  gap: 40px;
+  color: white;
 }
 
-// Init main chart
-window.addEventListener('load', () => {
-  radar1 = makeRadar(document.getElementById('radarChart1'));
-});
-
-function hexToRGBA(hex, alpha) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
+h1 {
+  text-align: center;
+  font-style: italic;
+  color: #333;
 }
 
-// Update stats
-document.getElementById('updateBtn').addEventListener('click', () => {
-  const vals = [
-    parseFloat(powerInput.value) || 0,
-    parseFloat(speedInput.value) || 0,
-    parseFloat(trickInput.value) || 0,
-    parseFloat(recoveryInput.value) || 0,
-    parseFloat(defenseInput.value) || 0
-  ];
-  const capped = vals.map(v => Math.min(v, 10));
-  chartColor = colorPicker.value;
+.container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
 
-  radar1.data.datasets[0].data = vals;
-  radar1.data.datasets[0].borderColor = chartColor;
-  radar1.data.datasets[0].backgroundColor = hexToRGBA(chartColor, 0.75);
-  radar1.data.datasets[0].pointBorderColor = chartColor;
-  radar1.options.scales.r.pointLabels.color = chartColor;
-  radar1.update();
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
 
-  if (radar2Ready) {
-    radar2.data.datasets[0].data = capped;
-    radar2.data.datasets[0].borderColor = chartColor;
-    radar2.data.datasets[0].pointBorderColor = chartColor;
-    radar2.options.scales.r.pointLabels.color = chartColor;
-    radar2.update();
-  }
+.upload-img {
+  width: 250px;
+  height: 250px;
+  border: 2px dashed #aaa;
+  border-radius: 10px;
+  object-fit: cover;
+  background-color: white;
+}
 
-  document.getElementById('dispName').textContent = nameInput.value || '-';
-  document.getElementById('dispAbility').textContent = abilityInput.value || '-';
-  document.getElementById('dispLevel').textContent = levelInput.value || '-';
-});
+.info-box {
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  padding: 10px 15px;
+  width: 250px;
+  line-height: 1.5;
+}
 
-// Overlay
-const overlay = document.getElementById('overlay');
-const viewBtn = document.getElementById('viewBtn');
-const closeBtn = document.getElementById('closeBtn');
-const downloadBtn = document.getElementById('downloadBtn');
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
 
-viewBtn.addEventListener('click', () => {
-  overlay.classList.remove('hidden');
+label {
+  font-style: italic;
+  color: #333;
+}
 
-  document.getElementById('overlayImg').src = document.getElementById('uploadedImg').src;
-  document.getElementById('overlayName').textContent = nameInput.value || '-';
-  document.getElementById('overlayAbility').textContent = abilityInput.value || '-';
-  document.getElementById('overlayLevel').textContent = levelInput.value || '-';
+input[type="number"], input[type="text"] {
+  width: 150px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: 4px;
+  font-family: Candara;
+}
 
-  setTimeout(() => {
-    const ctx2 = document.getElementById('radarChart2').getContext('2d');
-    if (!radar2Ready) {
-      radar2 = makeRadar(ctx2, 10, false);
-      radar2Ready = true;
-    } else {
-      radar2.resize();
-    }
+input[type="color"] {
+  border: none;
+  background: none;
+  width: 60px;
+  height: 40px;
+  cursor: pointer;
+}
 
-    const vals = [
-      parseFloat(powerInput.value) || 0,
-      parseFloat(speedInput.value) || 0,
-      parseFloat(trickInput.value) || 0,
-      parseFloat(recoveryInput.value) || 0,
-      parseFloat(defenseInput.value) || 0
-    ].map(v => Math.min(v, 10));
+button {
+  margin-top: 10px;
+  padding: 6px 10px;
+  font-family: Candara;
+  font-weight: bold;
+  background-color: #92dfec;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
-    radar2.data.datasets[0].data = vals;
-    radar2.data.datasets[0].borderColor = chartColor;
-    radar2.data.datasets[0].backgroundColor = hexToRGBA(chartColor, 0.75);
-    radar2.options.scales.r.pointLabels.color = chartColor;
-    radar2.update();
-  }, 100);
-});
+.chart-area {
+  position: relative;
+  width: 450px;
+  height: 450px;
+  border: 3px solid #184046;
+  border-radius: 10px;
+  background: radial-gradient(circle at center, #f8fcff 0%, #92dfec 25%, #92dfec 100%);
+}
 
-closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.hidden { display: none; }
 
-downloadBtn.addEventListener('click', () => {
-  html2canvas(document.getElementById('characterBox')).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'character_chart.png';
-    link.href = canvas.toDataURL();
-    link.click();
-  });
-});
+.character-box {
+  background: #fff;
+  padding: 20px;
+  border: 3px solid #493e3b;
+  border-radius: 10px;
+  position: relative;
+  color: #000;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+}
 
-// Image upload
-document.getElementById('imgInput').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById('uploadedImg').src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.image-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.overlay-img {
+  width: 250px;
+  height: 250px;
+  object-fit: cover;
+  border: 3px solid #493e3b;
+}
+
+.text-box {
+  position: absolute;
+  bottom: -35px;
+  width: 80%;
+  background: white;
+  border: 3px solid #493e3b;
+  padding: 8px;
+  font-family: Candara;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 5px;
+}
+
+.overlay-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60%;
+  height: 60%;
+  border: 3px solid #184046;
+  border-radius: 10px;
+  background: radial-gradient(circle at center, #f8fcff 0%, #92dfec 25%, #92dfec 100%);
+}
+
+#downloadBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #92dfec;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
