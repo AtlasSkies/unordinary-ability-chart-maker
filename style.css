@@ -108,7 +108,7 @@ button {
 
 .character-box {
   background: #fff;
-  width: 60vw;
+  width: 64vw;
   height: 80vh;
   border-radius: 15px;
   position: relative;
@@ -130,7 +130,6 @@ button {
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 20;
 }
 
 .image-section {
@@ -164,8 +163,8 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 520px;
-  height: 520px;
+  width: 500px;
+  height: 500px;
   position: relative;
 }
 
