@@ -1,43 +1,46 @@
+/* ===== General Layout ===== */
 body {
   font-family: Candara, sans-serif;
   background: #f0f8fc;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  flex-wrap: wrap;
-  padding: 4vw;
-  gap: 5vw;
-  color: white;
+  padding: 40px;
+  margin: 0;
+  color: #333;
 }
 
 h1 {
   text-align: center;
   font-style: italic;
   color: #333;
-  font-size: clamp(1.4rem, 2vw, 2.2rem);
+  margin-bottom: 10px;
 }
 
+/* ===== Container ===== */
 .container {
   display: flex;
   flex-wrap: wrap;
-  gap: 5vw;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  max-width: 1200px;
   width: 100%;
 }
 
+/* ===== Left Side ===== */
 .left {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2vh;
-  flex: 1 1 300px;
-  max-width: 400px;
+  gap: 15px;
+  min-width: 300px;
+  flex: 1 1 350px;
 }
 
 .upload-img {
-  width: min(50vw, 250px);
-  height: min(50vw, 250px);
+  width: clamp(180px, 25vw, 250px);
+  height: clamp(180px, 25vw, 250px);
   border: 2px dashed #aaa;
   border-radius: 10px;
   object-fit: cover;
@@ -49,16 +52,16 @@ h1 {
   color: black;
   border-radius: 8px;
   padding: 10px 15px;
-  width: 80%;
+  width: clamp(180px, 25vw, 250px);
+  text-align: left;
   line-height: 1.5;
-  text-align: center;
-  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .inputs {
   display: flex;
   flex-direction: column;
-  gap: 1vh;
+  gap: 8px;
   margin-top: 10px;
   width: 100%;
   align-items: center;
@@ -67,51 +70,54 @@ h1 {
 label {
   font-style: italic;
   color: #333;
-  font-size: clamp(0.8rem, 1vw, 1rem);
+  font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  width: clamp(200px, 80%, 260px);
 }
 
 input[type="number"], input[type="text"] {
-  width: 60%;
+  width: 110px;
   border-radius: 4px;
   border: 1px solid #ccc;
   padding: 4px;
   font-family: Candara;
-  font-size: 1rem;
 }
 
 input[type="color"] {
   border: none;
   background: none;
-  width: 50px;
+  width: 60px;
   height: 40px;
   cursor: pointer;
 }
 
 button {
-  margin-top: 10px;
-  padding: 8px 12px;
+  margin-top: 8px;
+  padding: 6px 12px;
   font-family: Candara;
   font-weight: bold;
   background-color: #92dfec;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: clamp(0.9rem, 1vw, 1rem);
+  transition: all 0.2s ease;
 }
 
+button:hover {
+  background-color: #6db5c0;
+  color: white;
+}
+
+/* ===== Chart Area ===== */
 .chart-area {
   position: relative;
-  flex: 1 1 400px;
-  max-width: 500px;
-  aspect-ratio: 1/1;
+  width: clamp(300px, 40vw, 450px);
+  height: clamp(300px, 40vw, 450px);
+  background: none;
 }
 
-.chart-area canvas {
-  width: 100% !important;
-  height: auto !important;
-}
-
-/* Overlay */
+/* ===== Overlay ===== */
 .overlay {
   position: fixed;
   top: 0; left: 0;
@@ -121,38 +127,34 @@ button {
   justify-content: center;
   align-items: center;
   z-index: 10;
-  padding: 3vw;
 }
 
 .hidden { display: none; }
 
 .character-box {
   background: #fff;
-  width: 90vw;
-  max-width: 1000px;
-  height: auto;
-  min-height: 60vh;
+  width: 65vw;
+  height: 80vh;
   border-radius: 15px;
   position: relative;
   color: #000;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 5vw;
+  gap: 40px;
   overflow: hidden;
   padding: 20px;
+  border: none;
 }
 
 .close-btn {
   position: absolute;
-  top: 8px;
-  right: 12px;
+  top: 10px;
+  right: 15px;
   font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 20;
 }
 
 .image-section {
@@ -163,39 +165,37 @@ button {
 }
 
 .overlay-img {
-  width: min(40vw, 300px);
-  height: min(40vw, 300px);
+  width: 300px;
+  height: 300px;
   object-fit: cover;
   border: 3px solid #493e3b;
+  border-radius: 6px;
 }
 
 .text-box {
   position: absolute;
-  bottom: -40px;
+  bottom: -45px;
   width: 80%;
   background: white;
   border: 3px solid #493e3b;
   padding: 10px;
   font-family: Candara;
   text-align: center;
-  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   border-radius: 5px;
 }
 
+/* ===== Overlay Chart ===== */
 .overlay-chart {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: min(80vw, 450px);
-  aspect-ratio: 1/1;
+  width: clamp(280px, 40vw, 450px);
+  height: clamp(280px, 40vw, 450px);
   position: relative;
 }
 
-.overlay-chart canvas {
-  width: 100% !important;
-  height: auto !important;
-}
-
+/* ===== Download Button ===== */
 #downloadBtn {
   position: absolute;
   bottom: 10px;
@@ -205,25 +205,5 @@ button {
   border-radius: 5px;
   padding: 6px 10px;
   cursor: pointer;
-}
-
-/* Responsive tweaks */
-@media (max-width: 700px) {
-  .character-box {
-    flex-direction: column;
-    gap: 3vh;
-  }
-
-  .overlay-img {
-    width: 60vw;
-    height: 60vw;
-  }
-
-  .overlay-chart {
-    width: 80vw;
-  }
-
-  .text-box {
-    bottom: -30px;
-  }
+  font-weight: bold;
 }
