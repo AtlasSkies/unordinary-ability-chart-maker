@@ -283,7 +283,7 @@ button:hover {
   left: 20px; /* Near the left edge */
   font-size: 8px; /* Very small */
   font-family: sans-serif; /* Not the main Candara font, simpler */
-  color: rgba(0, 0, 0, 0.1); /* 10% black opacity - VERY subtle */
+  color: rgba(0, 0, 0, 0.05); /* 10% black opacity - VERY subtle */
   z-index: 5;
   user-select: none; /* Make it unselectable */
   pointer-events: none; /* Ensure it doesn't block clicks */
