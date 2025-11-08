@@ -5,7 +5,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px; /* Reduced top padding */
+  /* Reduced top padding to shift content up */
+  padding: 20px 40px 40px 40px;
   margin: 0;
   color: #333;
 }
@@ -15,8 +16,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   position: relative;
+}
+
+/* Container for H1 and Subtitle */
+.title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
@@ -26,13 +34,13 @@ h1 {
   margin: 0;
 }
 
+/* Style for the italic subtitle */
 .subtitle {
   font-style: italic;
   font-size: 14px;
   color: #666;
-  text-align: center;
   margin-top: -5px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .info-container {
@@ -65,8 +73,8 @@ h1 {
   padding: 10px;
   position: absolute;
   z-index: 100;
-  /* Fixed position to drop down below icon */
-  top: 115%; 
+  /* Fix: Uses 'top' to appear below the icon */
+  top: 115%;
   left: 50%;
   transform: translateX(-50%);
   opacity: 0;
@@ -90,7 +98,8 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 20px; /* Reduced gap for compact feel */
+  /* Increased gap to accommodate the larger chart area */
+  gap: 30px;
   max-width: 1200px;
   width: 100%;
 }
@@ -100,7 +109,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* Reduced gap to bring chart closer */
+  gap: 15px;
   min-width: 300px;
   flex: 1 1 350px;
 }
@@ -119,7 +128,7 @@ h1 {
   color: black;
   border-radius: 8px;
   padding: 10px 15px;
-  width: clamp(200px, 80%, 260px);
+  width: clamp(180px, 25vw, 250px);
   text-align: left;
   line-height: 1.5;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -129,6 +138,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 10px;
   width: 100%;
   align-items: center;
 }
@@ -178,9 +188,9 @@ button:hover {
 /* ===== Chart Area ===== */
 .chart-area {
   position: relative;
-  /* Increased size to prevent 'Speed' cutoff */
-  width: clamp(350px, 40vw, 500px);
-  height: clamp(350px, 40vw, 500px);
+  /* Increased max size from 450px to 500px to fix the "Speed" label cutoff issue */
+  width: clamp(300px, 40vw, 500px);
+  height: clamp(300px, 40vw, 500px);
   background: none;
 }
 
@@ -200,9 +210,9 @@ button:hover {
 
 .character-box {
   background: #fff;
-  /* 20% smaller pop-up window */
-  width: 52vw; 
-  height: 64vh; 
+  /* Updated to be 20% smaller */
+  width: 52vw;
+  height: 64vh;
   border-radius: 15px;
   position: relative;
   color: #000;
@@ -230,7 +240,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 3; 
+  z-index: 3;
 }
 
 .overlay-img {
@@ -251,18 +261,8 @@ button:hover {
   font-family: Candara;
   text-align: center;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  /* Sharp corners */
-  border-radius: 0; 
-}
-
-/* Subtle Signature for Attribution */
-.subtle-signature {
-  position: absolute;
-  bottom: 5px;
-  left: 10px;
-  font-size: 10px;
-  /* 30% Opacity */
-  color: rgba(0, 0, 0, 0.3); 
+  /* Removed border-radius for sharper corners */
+  border-radius: 0;
 }
 
 /* ===== Overlay Chart (Container size determined by script.js) ===== */
@@ -270,11 +270,24 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Size adjustment based on script.js */
-  width: clamp(280px, 40vw, 450px); 
+  /* Starting size; overridden by script.js */
+  width: clamp(280px, 40vw, 450px);
   height: clamp(280px, 40vw, 450px);
   position: relative;
-  z-index: 2; 
+  z-index: 2;
+}
+
+/* NEW Subtle Signature Styling */
+.subtle-signature {
+  position: absolute;
+  bottom: 5px; /* Near the bottom */
+  left: 20px; /* Near the left edge */
+  font-size: 8px; /* Very small */
+  font-family: sans-serif; /* Not the main Candara font, simpler */
+  color: rgba(0, 0, 0, 0.05); /* 10% black opacity - VERY subtle */
+  z-index: 5;
+  user-select: none; /* Make it unselectable */
+  pointer-events: none; /* Ensure it doesn't block clicks */
 }
 
 /* ===== Download Button ===== */
