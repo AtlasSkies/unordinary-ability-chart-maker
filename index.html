@@ -31,7 +31,7 @@
         <label><i>Recovery:</i> <input type="number" id="recoveryInput" step="0.1" min="0" max="10"></label>
         <label><i>Defense:</i> <input type="number" id="defenseInput" step="0.1" min="0" max="10"></label>
         <label><b>Ability Color:</b> <input type="color" id="colorPicker" value="#92dfec"></label>
-        <button id="viewBtn">View Character Chart</button>
+        <button id="viewBtn" data-tooltip="Feel free to use this. Tag me, I'd love to see your work!">View Character Chart</button>
       </div>
     </div>
 
@@ -47,10 +47,12 @@
       <div class="image-section">
         <img id="overlayImg" class="overlay-img" alt="Character Image">
         <div class="text-box">
-          <p><b>Name:</b> <span id="overlayName">-</span></p>
-          <p><b>Ability:</b> <span id="overlayAbility">-</span></p>
-          <p><b>Level:</b> <span id="overlayLevel">-</span></p>
-          <div id="textWatermark" class="text-watermark"></div>
+            <div class="text-content">
+                <p><b>Name:</b> <span id="overlayName">-</span></p>
+                <p><b>Ability:</b> <span id="overlayAbility">-</span></p>
+                <p><b>Level:</b> <span id="overlayLevel">-</span></p>
+            </div>
+            <div id="textWatermark" class="text-watermark"></div>
         </div>
       </div>
 
