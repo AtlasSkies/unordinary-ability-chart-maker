@@ -1,84 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UnOrdinary Power Chart Maker</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnOrdinary Character Chart Creator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="left">
-      <div class="header-with-info">
-        <div class="title-block">
-          <h1>UnOrdinary Ability Chart Maker</h1>
-          <div class="subtitle">By Atlas Skies</div>
+    <div class="container">
+        <!-- Input and Chart 1 Section -->
+        <div class="left">
+            <div class="header-with-info">
+                <h1>UnOrdinary Chart Maker</h1>
+                <div class="info-container">
+                    <span class="info-icon">i</span>
+                    <div class="info-hover">
+                        This tool creates a radar chart showing a character's stats based on the UnOrdinary system (Level, Power, Trick, Speed, Recovery, Defense). The maximum value for any single stat is 10.0.
+                    </div>
+                </div>
+            </div>
+            <p class="subtitle">By Atlas Skies</p>
+
+            <img id="uploadImg" class="upload-img" src="https://placehold.co/250x250/cccccc/333333?text=Upload+Image" alt="Character Placeholder">
+            <input type="file" id="imageUpload" accept="image/*" style="margin-top: 5px;">
+            
+            <div class="info-box">
+                <label>Name: <input type="text" id="charName" value="John Doe"></label>
+                <label>Level: <input type="number" id="levelInput" min="1.0" max="10.0" step="0.1" value="7.5"></label>
+                <label>Ability Color: <input type="color" id="colorPicker" value="#8080ff"></label>
+            </div>
+            
+            <div class="inputs">
+                <label>Power: <input type="number" id="powerInput" min="1.0" max="10.0" step="0.1" value="8.0"></label>
+                <label>Defense: <input type="number" id="defenseInput" min="1.0" max="10.0" step="0.1" value="7.0"></label>
+                <label>Speed: <input type="number" id="speedInput" min="1.0" max="10.0" step="0.1" value="8.0"></label>
+                <label>Recovery: <input type="number" id="recoveryInput" min="1.0" max="10.0" step="0.1" value="3.0"></label>
+                <label>Trick: <input type="number" id="trickInput" min="1.0" max="10.0" step="0.1" value="10.0"></label>
+            </div>
+            
+            <button id="viewChartBtn">View Character Chart</button>
+
+            <!-- Chart 1 Canvas -->
+            <div class="chart-area">
+                <canvas id="radarChart1"></canvas>
+            </div>
         </div>
-        <div class="info-container">
-          <span class="info-icon">i</span>
-          <div class="info-hover">
-            Feel free to use this for fun (and if you're Uru-Chan, feel free to use this on the main comic). Please keep in mind Candara is copy righted so you can't use this for commercial use unless you pay.
-          </div>
-        </div>
-      </div>
-
-      <input type="file" accept="image/*" id="imgInput">
-      <img id="uploadedImg" class="upload-img" alt="Uploaded Image">
-
-      <div class="info-box">
-        <b>Name:</b> <span id="dispName">-</span><br>
-        <b>Ability:</b> <span id="dispAbility">-</span><br>
-        <b>Level:</b> <span id="dispLevel">-</span>
-      </div>
-
-      <div class="inputs">
-        <label>Name: <input type="text" id="nameInput"></label>
-        <label>Ability: <input type="text" id="abilityInput"></label>
-        <label>Level: <input type="text" id="levelInput"></label>
-        <label>Power: <input type="number" id="powerInput" step="0.1" min="0"></label>
-        <label>Speed: <input type="number" id="speedInput" step="0.1" min="0"></label>
-        <label>Trick: <input type="number" id="trickInput" step="0.1" min="0"></label>
-        <label>Recovery: <input type="number" id="recoveryInput" step="0.1" min="0"></label>
-        <label>Defense: <input type="number" id="defenseInput" step="0.1" min="0"></label>
-        <label>Ability Color: <input type="color" id="colorPicker" value="#92dfec"></label>
-
-        <button id="updateBtn">Update Chart</button>
-        <button id="viewBtn">View Character Chart</button>
-      </div>
     </div>
 
-    <div class="chart-area">
-      <canvas id="radarChart1"></canvas>
-    </div>
-  </div>
-
-  <!-- Overlay -->
-  <div id="overlay" class="overlay hidden">
-    <div id="characterBox" class="character-box">
-      <button id="closeBtn" class="close-btn">×</button>
-
-      <div class="image-section">
-        <img id="overlayImg" class="overlay-img" alt="Character Image">
-        <div class="text-box">
-          <b>Name:</b> <span id="overlayName">-</span><br>
-          <b>Ability:</b> <span id="overlayAbility">-</span><br>
-          <b>Level:</b> <span id="overlayLevel">-</span>
+    <!-- Overlay / Modal for Chart 2 -->
+    <div id="overlay" class="overlay hidden">
+        <div class="character-box">
+            <button class="close-btn" id="closeBtn">&times;</button>
+            <div class="image-section">
+                <img id="overlayImg" class="overlay-img" src="https://placehold.co/250x250/cccccc/333333?text=John+Doe" alt="Character">
+                <div class="text-box">
+                    <span id="overlayName">John Doe</span> | Level: <span id="overlayLevel">7.5</span>
+                </div>
+                <div id="subtleSignature" class="subtle-signature"></div>
+            </div>
+            
+            <div class="overlay-chart">
+                <canvas id="radarChart2"></canvas>
+                <button id="downloadBtn">Download Character Chart</button>
+            </div>
         </div>
-      </div>
-
-      <div class="overlay-chart">
-        <canvas id="radarChart2"></canvas>
-      </div>
-      
-      <!-- Subtle Signature Element (Very faint text) -->
-      <div id="subtleSignature" class="subtle-signature"></div>
-
-      <button id="downloadBtn">Download Character Chart</button>
     </div>
-  </div>
-
-  <script src="script.js"></script>
+    
+    <script src="script.js"></script>
 </body>
 </html>
