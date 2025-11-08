@@ -1,69 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UnOrdinary Power Chart Maker</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UnOrdinary Power Chart Maker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="left">
-      <h1>UnOrdinary Power Chart Maker</h1>
-      <div class="subtitle">By Atlas Skies</div>
+  <div class="container">
+    <div class="left">
+      <h1>UnOrdinary Power Chart Maker</h1>
+      <div class="subtitle">By Atlas Skies</div>
 
-      <input type="file" accept="image/*" id="imgInput">
-      <img id="uploadedImg" class="upload-img" alt="Uploaded Image"
-           src="https://placehold.co/250x250/cccccc/333333?text=Upload+Image">
+      <input type="file" accept="image/*" id="imgInput">
+      <img id="uploadedImg" class="upload-img" alt="Uploaded Image"
+           src="https://placehold.co/250x250/cccccc/333333?text=Upload+Image">
 
-      <div class="info-inputs-box">
-        <label><b>Name:</b> <input type="text" id="nameInput"></label>
-        <label><b>Ability:</b> <input type="text" id="abilityInput"></label>
-        <label><b>Level:</b> <input type="text" id="levelInput"></label>
-      </div>
+      <div class="info-inputs-box">
+        <label><b>Name:</b> <input type="text" id="nameInput"></label>
+        <label><b>Ability:</b> <input type="text" id="abilityInput"></label>
+        <label><b>Level:</b> <input type="text" id="levelInput"></label>
+      </div>
 
-      <div class="inputs">
-        <label><i>Power:</i> <input type="number" id="powerInput" step="0.1" min="0"></label>
-        <label><i>Speed:</i> <input type="number" id="speedInput" step="0.1" min="0"></label>
-        <label><i>Trick:</i> <input type="number" id="trickInput" step="0.1" min="0"></label>
-        <label><i>Recovery:</i> <input type="number" id="recoveryInput" step="0.1" min="0"></label>
-        <label><i>Defense:</i> <input type="number" id="defenseInput" step="0.1" min="0"></label>
-        <label><b>Ability Color:</b> <input type="color" id="colorPicker" value="#92dfec"></label>
-        <button id="viewBtn">View Character Chart</button>
-      </div>
-    </div>
+      <div class="inputs">
+        <label><i>Power:</i> <input type="number" id="powerInput" step="0.1" min="0" max="10"></label>
+        <label><i>Speed:</i> <input type="number" id="speedInput" step="0.1" min="0" max="10"></label>
+        <label><i>Trick:</i> <input type="number" id="trickInput" step="0.1" min="0" max="10"></label>
+        <label><i>Recovery:</i> <input type="number" id="recoveryInput" step="0.1" min="0" max="10"></label>
+        <label><i>Defense:</i> <input type="number" id="defenseInput" step="0.1" min="0" max="10"></label>
+        <label><b>Ability Color:</b> <input type="color" id="colorPicker" value="#92dfec"></label>
+        <button id="viewBtn">View Character Chart</button>
+      </div>
+    </div>
 
-    <div class="chart-area">
-      <canvas id="radarChart1"></canvas>
-    </div>
-  </div>
+    <div class="chart-area">
+      <canvas id="radarChart1"></canvas>
+    </div>
+  </div>
 
-  <div id="overlay" class="overlay hidden">
-    <div id="characterBox" class="character-box">
-      <button id="closeBtn" class="close-btn">×</button>
+  <div id="overlay" class="overlay hidden">
+    <div id="characterBox" class="character-box">
+      <button id="closeBtn" class="close-btn">×</button>
 
-      <div class="image-section">
-        <img id="overlayImg" class="overlay-img" alt="Character Image">
-        <div class="text-box">
-            <div class="text-content">
-                <p><b>Name:</b> <span id="overlayName">-</span></p>
-                <p><b>Ability:</b> <span id="overlayAbility">-</span></p>
-                <p><b>Level:</b> <span id="overlayLevel">-</span></p>
-            </div>
-        </div>
-      </div>
+      <div class="image-section">
+        <img id="overlayImg" class="overlay-img" alt="Character Image">
+        <div class="text-box">
+            <div class="text-content">
+                <p><b>Name:</b> <span id="overlayName">-</span></p>
+                <p><b>Ability:</b> <span id="overlayAbility">-</span></p>
+                <p><b>Level:</b> <span id="overlayLevel">-</span></p>
+            </div>
+        </div>
+      </div>
 
-      <div class="overlay-chart">
-        <canvas id="radarChart2"></canvas>
-      </div>
+      <div class="overlay-chart">
+        <canvas id="radarChart2"></canvas>
+      </div>
 
-      <div id="subtleSignature" class="subtle-signature"></div>
-      <button id="downloadBtn">Download Character Chart</button>
-    </div>
-  </div>
+      <div id="subtleSignature" class="subtle-signature"></div>
+      <button id="downloadBtn">Download Character Chart</button>
+    </div>
+  </div>
 
-  <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
