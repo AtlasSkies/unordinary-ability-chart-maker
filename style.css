@@ -28,6 +28,8 @@ h1 {
   gap: 30px;
   max-width: 1200px;
   width: 100%;
+  /* FIX: Vertically center chart with inputs */
+  align-items: center; 
 }
 
 .left {
@@ -130,8 +132,11 @@ button[data-tooltip]:hover::after {
 }
 
 .chart-area {
-  width: clamp(280px, 40vw, 500px);
-  height: clamp(280px, 40vw, 500px);
+  /* FIX: 10% smaller than previous size (500px -> 450px max) */
+  width: clamp(250px, 36vw, 450px);
+  height: clamp(250px, 36vw, 450px);
+  /* FIX: Increase boundary around the chart */
+  padding: 20px; 
 }
 
 .overlay {
@@ -150,8 +155,8 @@ button[data-tooltip]:hover::after {
 .character-box {
   background: #fff;
   border-radius: 15px;
-  width: 65vw; /* Slightly wider to accommodate larger image/chart */
-  height: 80vh; /* Taller to accommodate larger image/chart */
+  width: 65vw;
+  height: 80vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -172,7 +177,6 @@ button[data-tooltip]:hover::after {
 }
 
 .image-section {
-  /* Use flex to handle dynamic centering of image and text box container */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -180,7 +184,6 @@ button[data-tooltip]:hover::after {
 }
 
 .overlay-img {
-  /* FIX: Larger image size */
   width: 320px;
   height: 320px;
   border: 3px solid #184046;
@@ -198,20 +201,19 @@ button[data-tooltip]:hover::after {
   font-family: Candara;
   font-size: 18px;
 
-  /* FIX: Overlap image by 5% (320px * 0.05 = 16px) */
-  position: absolute;
-  bottom: -16px;
+  /* Overlap distance = Image Height * 0.05 = 320px * 0.05 = 16px
+     Box Height is roughly 70px.
+     Bottom position = -(Box Height - Overlap) = -(70px - 16px) ≈ -54px
+  */
+  bottom: -54px;
   
-  /* FIX: Enable vertical centering of text content */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
 
-/* Container for Name/Ability/Level to ensure centering despite watermark */
 .text-content {
-    /* Must be absolute or relative to allow watermark to float over it */
     position: relative; 
     text-align: center;
 }
@@ -225,7 +227,6 @@ button[data-tooltip]:hover::after {
   font-style: normal;
 }
 
-/* FIX: Watermark styling (AS in bottom left, small, low opacity) */
 .text-watermark {
     content: "AS";
     position: absolute;
@@ -233,14 +234,13 @@ button[data-tooltip]:hover::after {
     left: 5px;
     font-size: 10px;
     font-family: sans-serif;
-    color: rgba(0, 0, 0, 0.05); /* 5% opacity */
-    pointer-events: none; /* Ignore clicks */
+    color: rgba(0, 0, 0, 0.05);
+    pointer-events: none;
 }
 
 .overlay-chart {
-  /* Correspondingly larger chart area */
-  width: clamp(350px, 45vw, 550px);
-  height: clamp(350px, 45vw, 550px);
+  width: clamp(315px, 40vw, 500px);
+  height: clamp(315px, 40vw, 500px);
 }
 
 .subtle-signature {
