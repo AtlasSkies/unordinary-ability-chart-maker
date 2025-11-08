@@ -28,7 +28,7 @@ const fixedCenterPlugin = {
 
     if (opt.centerX && opt.centerY) {
       r.xCenter = opt.centerX;
-      r.yCenter = opt.yCenter;
+      r.yCenter = opt.centerY;
     }
 
     r.drawingArea *= CHART_SCALE_FACTOR;
@@ -168,8 +168,16 @@ const outlinedLabelsPlugin = {
   }
 };
 
+/* === Register Plugins (Crucial for chart appearance fix) === */
+Chart.register(fixedCenterPlugin, radarBackgroundPlugin, outlinedLabelsPlugin);
+
+
 /* === Create Chart Function === */
 function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false, fixedCenter = null) {
+  // Ensure chartColor is used for dynamic styling
+  const currentChartColor = document.getElementById('colorPicker').value || '#92dfec';
+  const fill = hexToRGBA(currentChartColor, 0.65);
+
   return new Chart(ctx, {
     type: 'radar',
     data: {
@@ -177,11 +185,11 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
       datasets: [{
         data: [0, 0, 0, 0, 0],
         // Opacity updated to 0.65
-        backgroundColor: hexToRGBA(chartColor, 0.65),
-        borderColor: chartColor,
+        backgroundColor: fill,
+        borderColor: currentChartColor,
         borderWidth: 2,
         pointBackgroundColor: '#fff',
-        pointBorderColor: chartColor,
+        pointBorderColor: currentChartColor,
         pointRadius: showPoints ? 5 : 0,
         order: 1
       }]
@@ -207,7 +215,7 @@ function makeRadar(ctx, maxCap = null, showPoints = true, withBackground = false
       fixedCenter: { enabled: !!fixedCenter, centerX: fixedCenter?.x, centerY: fixedCenter?.y },
       plugins: { legend: { display: false } }
     },
-    plugins: [fixedCenterPlugin, radarBackgroundPlugin, outlinedLabelsPlugin]
+    // Plugins list can be empty here since they are globally registered above
   });
 }
 
@@ -222,9 +230,7 @@ const trickInput = document.getElementById('trickInput');
 const recoveryInput = document.getElementById('recoveryInput');
 const defenseInput = document.getElementById('defenseInput');
 const colorPicker = document.getElementById('colorPicker');
-const dispName = document.getElementById('dispName');
-const dispAbility = document.getElementById('dispAbility');
-const dispLevel = document.getElementById('dispLevel');
+// REMOVED: dispName, dispAbility, dispLevel elements as they are no longer in the HTML
 const nameInput = document.getElementById('nameInput');
 const abilityInput = document.getElementById('abilityInput');
 const levelInput = document.getElementById('levelInput');
@@ -243,13 +249,16 @@ const subtleSignature = document.getElementById('subtleSignature');
 
 /* === Chart 1 (Main) Initialization === */
 window.addEventListener('load', () => {
+    // Initial color setup
+    chartColor = colorPicker.value; // Set global color variable for plugins
+    
     // Initial placeholder image setup
     const initialName = nameInput.value || 'Upload Image';
     uploadedImg.src = `https://placehold.co/250x250/cccccc/333333?text=${initialName.replace(/\s/g, '+')}`;
     
     const ctx1 = document.getElementById('radarChart1').getContext('2d');
     radar1 = makeRadar(ctx1, 10, true, false, CHART1_CENTER);
-    chartColor = colorPicker.value;
+    
     // Initial chart draw
     updateChart();
 });
@@ -273,13 +282,12 @@ function updateChart() {
         radar1.data.datasets[0].borderColor = chartColor;
         radar1.data.datasets[0].pointBorderColor = chartColor;
         radar1.data.datasets[0].backgroundColor = fill;
+        // Update plugin options that rely on chartColor
+        radar1.options.plugins.outlinedLabels = { color: chartColor };
         radar1.update();
     }
     
-    // Update display box
-    dispName.textContent = nameInput.value || '-';
-    dispAbility.textContent = abilityInput.value || '-';
-    dispLevel.textContent = levelInput.value || '-';
+    // REMOVED: display box update as it's no longer in the main interface
 }
 
 /* === Event Listeners === */
@@ -327,16 +335,20 @@ viewBtn.addEventListener('click', () => {
         overlayChart.style.width = `${targetSize}px`;
 
         const ctx2 = document.getElementById('radarChart2').getContext('2d');
+        
+        // Re-set global chart color before creating/updating chart 2
+        chartColor = colorPicker.value;
 
         // Initialize or resize Chart 2
-        if (!radar2Ready) {
-            // Pass the new targetSize/2 for the center coordinates
-            radar2 = makeRadar(ctx2, 10, false, true, { x: targetSize / 2, y: targetSize / 2 });
-            radar2Ready = true;
-        } else {
-            // If already initialized, just update the canvas size
-            radar2.resize();
+        if (radar2) {
+            // Destroy existing chart to properly reinitialize with new dimensions
+            radar2.destroy();
+            radar2Ready = false;
         }
+
+        // Initialize Chart 2
+        radar2 = makeRadar(ctx2, 10, false, true, { x: targetSize / 2, y: targetSize / 2 });
+        radar2Ready = true;
 
         // Update Chart 2 data (CAPPED at 10)
         const vals = [
