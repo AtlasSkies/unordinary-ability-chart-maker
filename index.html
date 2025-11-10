@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UnOrdinary Ability Chart Maker</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
@@ -20,7 +20,11 @@
       </div>
 
       <input type="file" accept="image/*" id="imgInput">
-      <img id="uploadedImg" class="upload-img" alt="Uploaded Image">
+      <div class="image-wrap">
+        <img id="uploadedImg" class="upload-img" alt="Uploaded Image">
+        <!-- Watermark overlays imported image -->
+        <div class="img-watermark">AS</div>
+      </div>
 
       <div class="info-box">
         <label><b>Name:</b> <input type="text" id="nameInput"></label>
@@ -36,7 +40,11 @@
         <label>Defense: <input type="number" id="defenseInput" step="0.1" min="0"></label>
         <label>Ability Color: <input type="color" id="colorPicker" value="#92dfec"></label>
 
-        <button id="multiColorBtn">Multi-color</button>
+        <div class="button-row">
+          <button id="multiColorBtn">Multi-color</button>
+          <button id="viewBtn">View Character Chart</button>
+        </div>
+
         <div id="axisColors">
           <label>Power Color: <input type="color" id="powerColor" value="#92dfec"></label>
           <label>Speed Color: <input type="color" id="speedColor" value="#92dfec"></label>
@@ -45,13 +53,14 @@
           <label>Defense Color: <input type="color" id="defenseColor" value="#92dfec"></label>
         </div>
 
-        <button id="viewBtn">View Character Chart</button>
+        <div class="button-row">
+          <button id="addChartBtn">+ Add Chart</button>
+          <div id="chartButtons" class="chart-buttons"></div>
+        </div>
       </div>
     </div>
 
-    <div class="chart-area">
-      <canvas id="radarChart1"></canvas>
-    </div>
+    <div class="chart-area" id="chartArea"></div>
   </div>
 
   <!-- Overlay -->
@@ -60,7 +69,11 @@
       <button id="closeBtn" class="close-btn">×</button>
 
       <div class="image-section">
-        <img id="overlayImg" class="overlay-img" alt="Character Image">
+        <div class="overlay-img-wrap">
+          <img id="overlayImg" class="overlay-img" alt="Character Image">
+          <!-- Watermark overlays POPUP image too -->
+          <div class="img-watermark">AS</div>
+        </div>
         <div class="text-box">
           <b>Name:</b> <span id="overlayName">-</span><br>
           <b>Ability:</b> <span id="overlayAbility">-</span><br>
@@ -69,7 +82,7 @@
       </div>
 
       <div class="overlay-chart">
-        <canvas id="radarChart2"></canvas>
+        <canvas id="overlayChartCanvas"></canvas>
       </div>
 
       <button id="downloadBtn">Download Character Chart</button>
