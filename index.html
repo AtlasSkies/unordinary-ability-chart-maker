@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UnOrdinary Ability Chart Maker</title>
+
+  <!-- ✅ Use Carlito font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Carlito&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -17,7 +21,6 @@
           <h1>UnOrdinary Ability Chart Maker</h1>
           <div class="subtitle">
             By Atlas Skies
-            <!-- Info icon with accessible toggle for mobile -->
             <button class="info-icon" type="button" aria-expanded="false" aria-label="Credits info">
               ℹ️
               <span class="tooltip-text" role="tooltip">
@@ -90,10 +93,9 @@
     </div>
   </div>
 
-  <!-- Your existing script.js should still be included -->
   <script src="script.js"></script>
 
-  <!-- Tiny helper to make the tooltip work on iOS tap -->
+  <!-- Tooltip toggle for mobile devices -->
   <script>
     (function () {
       const infoBtn = document.querySelector('.info-icon');
