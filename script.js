@@ -29,17 +29,9 @@ function makeConicGradient(chart, axisColors, alpha = FILL_ALPHA) {
   return grad;
 }
 
-function getGlobalScaleMax() {
-  let m = 10;
-  charts.forEach(c => c.stats.forEach(v => m = Math.max(m, v)));
-  return Math.ceil(m);
-}
-
 /*************************
  * PLUGINS
  *************************/
-
-/* Pentagon background (popup only) */
 const radarBackgroundPlugin = {
   id: 'customPentagonBackground',
   beforeDatasetsDraw(chart) {
@@ -48,12 +40,10 @@ const radarBackgroundPlugin = {
     const r = chart.scales.r, ctx = chart.ctx;
     const cx = r.xCenter, cy = r.yCenter, radius = r.drawingArea;
     const N = chart.data.labels.length, start = -Math.PI / 2;
-
     const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
     gradient.addColorStop(0, '#f8fcff');
     gradient.addColorStop(0.33, BASE_COLOR);
     gradient.addColorStop(1, BASE_COLOR);
-
     ctx.save();
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
@@ -73,17 +63,18 @@ const radarBackgroundPlugin = {
     const r = chart.scales.r, ctx = chart.ctx;
     const cx = r.xCenter, cy = r.yCenter, radius = r.drawingArea;
     const N = chart.data.labels.length, start = -Math.PI / 2;
-
     ctx.save();
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const a = start + (i * 2 * Math.PI / N);
       const x = cx + radius * Math.cos(a);
       const y = cy + radius * Math.sin(a);
-      ctx.moveTo(cx, cy); ctx.lineTo(x, y);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = '#35727d'; ctx.lineWidth = 1; ctx.stroke();
-
+    ctx.strokeStyle = '#35727d';
+    ctx.lineWidth = 1;
+    ctx.stroke();
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const a = start + (i * 2 * Math.PI / N);
@@ -92,38 +83,38 @@ const radarBackgroundPlugin = {
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = '#184046'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = '#184046';
+    ctx.lineWidth = 3;
+    ctx.stroke();
     ctx.restore();
   }
 };
 
-/* Axis titles */
 const axisTitlesPlugin = {
   id: 'axisTitles',
   afterDraw(chart) {
-    const ctx = chart.ctx, r = chart.scales.r;
-    const labels = chart.data.labels;
+    const ctx = chart.ctx,
+      r = chart.scales.r,
+      labels = chart.data.labels;
     if (!labels) return;
-    const cx = r.xCenter, cy = r.yCenter;
-    const base = -Math.PI / 2;
-    const baseRadius = r.drawingArea * 1.1;
-
     const isPopup = chart.canvas.closest('#overlay') !== null;
-
+    const cx = r.xCenter,
+      cy = r.yCenter,
+      base = -Math.PI / 2,
+      baseRadius = r.drawingArea * 1.1;
     ctx.save();
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
-    ctx.strokeStyle = '#8747e6'; ctx.fillStyle = 'white'; ctx.lineWidth = 4;
-
+    ctx.strokeStyle = '#8747e6';
+    ctx.fillStyle = 'white';
+    ctx.lineWidth = 4;
     labels.forEach((label, i) => {
       const a = base + (i * 2 * Math.PI / labels.length);
       const x = cx + baseRadius * Math.cos(a);
       let y = cy + baseRadius * Math.sin(a);
-
-      // Adjust in popup: raise Speed & Defense
-      if (isPopup && (label === 'Speed' || label === 'Defense')) y -= 25;
-      if (i === 0) y -= 5; // Power slightly up
-
+      if (i === 0) y -= 5;
+      if (isPopup && (i === 1 || i === 4)) y -= 25;
       ctx.strokeText(label, x, y);
       ctx.fillText(label, x, y);
     });
@@ -131,43 +122,34 @@ const axisTitlesPlugin = {
   }
 };
 
-/* Parentheses plugin (main chart only, live max update) */
 const globalValueLabelsPlugin = {
   id: 'globalValueLabels',
   afterDraw(chart) {
-    // Only apply to main charts (not popup)
     if (chart.canvas.closest('#overlay')) return;
-
-    const ctx = chart.ctx, r = chart.scales.r;
-    const labels = chart.data.labels;
-    const cx = r.xCenter, cy = r.yCenter;
-    const base = -Math.PI / 2;
-    const baseRadius = r.drawingArea * 1.1;
-    const offset = 20;
-
-    // Find global max per axis
+    const ctx = chart.ctx,
+      r = chart.scales.r,
+      labels = chart.data.labels,
+      cx = r.xCenter,
+      cy = r.yCenter,
+      base = -Math.PI / 2,
+      baseRadius = r.drawingArea * 1.1,
+      offset = 20;
     const axes = labels.length;
     const maxPerAxis = new Array(axes).fill(0);
     charts.forEach(c => {
-      for (let i = 0; i < axes; i++) {
+      for (let i = 0; i < axes; i++)
         maxPerAxis[i] = Math.max(maxPerAxis[i], c.stats[i] || 0);
-      }
     });
-
     ctx.save();
     ctx.font = '15px Candara';
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-
     labels.forEach((_, i) => {
       const angle = base + (i * 2 * Math.PI / axes);
       const x = cx + (baseRadius + offset) * Math.cos(angle);
       let y = cy + (baseRadius + offset) * Math.sin(angle);
-
-      // Lower Power, Speed, Defense slightly
       if (i === 0 || i === 1 || i === 4) y += 20;
-
       const val = Math.round(maxPerAxis[i] * 100) / 100;
       ctx.fillText(`(${val})`, x, y);
     });
@@ -176,7 +158,7 @@ const globalValueLabelsPlugin = {
 };
 
 /*************************
- * FACTORY
+ * CHART CREATION
  *************************/
 function makeRadar(ctx, color, withBackground = false) {
   return new Chart(ctx, {
@@ -215,43 +197,39 @@ function makeRadar(ctx, color, withBackground = false) {
 }
 
 /*************************
- * DOM HOOKS
+ * DOM
  *************************/
-const chartArea = document.getElementById('chartArea');
-const addChartBtn = document.getElementById('addChartBtn');
-const chartButtons = document.getElementById('chartButtons');
-
-const powerInput = document.getElementById('powerInput');
-const speedInput = document.getElementById('speedInput');
-const trickInput = document.getElementById('trickInput');
-const recoveryInput = document.getElementById('recoveryInput');
-const defenseInput = document.getElementById('defenseInput');
-
-const colorPicker = document.getElementById('colorPicker');
-const multiColorBtn = document.getElementById('multiColorBtn');
-const axisColorsDiv = document.getElementById('axisColors');
-const axisColorPickers = [
-  document.getElementById('powerColor'),
-  document.getElementById('speedColor'),
-  document.getElementById('trickColor'),
-  document.getElementById('recoveryColor'),
-  document.getElementById('defenseColor')
-];
-
-const viewBtn = document.getElementById('viewBtn');
-const overlay = document.getElementById('overlay');
-const closeBtn = document.getElementById('closeBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-
-const uploadedImg = document.getElementById('uploadedImg');
-const imgInput = document.getElementById('imgInput');
-const overlayImg = document.getElementById('overlayImg');
-const overlayName = document.getElementById('overlayName');
-const overlayAbility = document.getElementById('overlayAbility');
-const overlayLevel = document.getElementById('overlayLevel');
-const nameInput = document.getElementById('nameInput');
-const abilityInput = document.getElementById('abilityInput');
-const levelInput = document.getElementById('levelInput');
+const chartArea = document.getElementById('chartArea'),
+  addChartBtn = document.getElementById('addChartBtn'),
+  chartButtons = document.getElementById('chartButtons'),
+  powerInput = document.getElementById('powerInput'),
+  speedInput = document.getElementById('speedInput'),
+  trickInput = document.getElementById('trickInput'),
+  recoveryInput = document.getElementById('recoveryInput'),
+  defenseInput = document.getElementById('defenseInput'),
+  colorPicker = document.getElementById('colorPicker'),
+  multiColorBtn = document.getElementById('multiColorBtn'),
+  axisColorsDiv = document.getElementById('axisColors'),
+  axisColorPickers = [
+    document.getElementById('powerColor'),
+    document.getElementById('speedColor'),
+    document.getElementById('trickColor'),
+    document.getElementById('recoveryColor'),
+    document.getElementById('defenseColor')
+  ],
+  viewBtn = document.getElementById('viewBtn'),
+  overlay = document.getElementById('overlay'),
+  closeBtn = document.getElementById('closeBtn'),
+  downloadBtn = document.getElementById('downloadBtn'),
+  uploadedImg = document.getElementById('uploadedImg'),
+  imgInput = document.getElementById('imgInput'),
+  overlayImg = document.getElementById('overlayImg'),
+  overlayName = document.getElementById('overlayName'),
+  overlayAbility = document.getElementById('overlayAbility'),
+  overlayLevel = document.getElementById('overlayLevel'),
+  nameInput = document.getElementById('nameInput'),
+  abilityInput = document.getElementById('abilityInput'),
+  levelInput = document.getElementById('levelInput');
 
 /*************************
  * INIT
@@ -272,10 +250,11 @@ function addChart() {
   canvas.style.inset = '0';
   canvas.style.zIndex = charts.length + '';
   chartArea.appendChild(canvas);
-
-  const color = charts.length === 0 ? BASE_COLOR : `hsl(${Math.floor(Math.random()*360)},70%,55%)`;
+  const color =
+    charts.length === 0
+      ? BASE_COLOR
+      : `hsl(${Math.floor(Math.random() * 360)},70%,55%)`;
   const chart = makeRadar(canvas.getContext('2d'), color, false);
-
   const cObj = {
     chart,
     canvas,
@@ -285,7 +264,6 @@ function addChart() {
     axis: axisColorPickers.map(p => p.value)
   };
   charts.push(cObj);
-
   const idx = charts.length - 1;
   const btn = document.createElement('button');
   btn.textContent = `Select Chart ${idx + 1}`;
@@ -300,34 +278,24 @@ function selectChart(index) {
     b.style.color = i === index ? '#fff' : '#000';
   });
   const c = charts[index];
-  [powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach((el, i) => el.value = c.stats[i]);
+  [powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach(
+    (el, i) => (el.value = c.stats[i])
+  );
   colorPicker.value = c.color;
   multiColorBtn.textContent = c.multi ? 'Single-color' : 'Multi-color';
   axisColorsDiv.style.display = c.multi ? 'flex' : 'none';
 }
 
 /*************************
- * UPDATE / DRAW
+ * UPDATE
  *************************/
-function applyGlobalScale() {
-  const maxV = getGlobalScaleMax();
-  charts.forEach(c => {
-    c.chart.options.scales.r.max = Math.max(10, maxV);
-    c.chart.update();
-  });
-  if (radarPopup) {
-    radarPopup.options.scales.r.max = Math.max(10, maxV);
-    radarPopup.update();
-  }
-}
-
 function refreshAll() {
-  applyGlobalScale();
   charts.forEach(obj => {
     const ds = obj.chart.data.datasets[0];
-    const fill = obj.multi ? makeConicGradient(obj.chart, obj.axis, FILL_ALPHA)
-                           : hexToRGBA(obj.color, FILL_ALPHA);
-    ds.data = obj.stats.slice();
+    const fill = obj.multi
+      ? makeConicGradient(obj.chart, obj.axis, FILL_ALPHA)
+      : hexToRGBA(obj.color, FILL_ALPHA);
+    ds.data = obj.stats.map(v => Math.min(v, 10)); // cap at 10
     ds.borderColor = obj.color;
     ds.pointBorderColor = obj.color;
     ds.backgroundColor = fill;
@@ -352,24 +320,22 @@ function refreshActiveFromInputs() {
 /*************************
  * LISTENERS
  *************************/
-addChartBtn.addEventListener('click', () => addChart());
-
-[powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach(el => {
-  el.addEventListener('input', refreshActiveFromInputs);
-});
-
+addChartBtn.addEventListener('click', addChart);
+[powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach(el =>
+  el.addEventListener('input', refreshActiveFromInputs)
+);
 colorPicker.addEventListener('input', () => {
   charts[activeIndex].color = colorPicker.value;
   refreshAll();
 });
-
-axisColorPickers.forEach(p => p.addEventListener('input', () => {
-  if (charts[activeIndex].multi) {
-    charts[activeIndex].axis = axisColorPickers.map(p => p.value);
-    refreshAll();
-  }
-}));
-
+axisColorPickers.forEach(p =>
+  p.addEventListener('input', () => {
+    if (charts[activeIndex].multi) {
+      charts[activeIndex].axis = axisColorPickers.map(p => p.value);
+      refreshAll();
+    }
+  })
+);
 multiColorBtn.addEventListener('click', () => {
   const c = charts[activeIndex];
   c.multi = !c.multi;
@@ -377,12 +343,11 @@ multiColorBtn.addEventListener('click', () => {
   axisColorsDiv.style.display = c.multi ? 'flex' : 'none';
   refreshAll();
 });
-
 imgInput.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   const r = new FileReader();
-  r.onload = ev => { uploadedImg.src = ev.target.result; };
+  r.onload = ev => (uploadedImg.src = ev.target.result);
   r.readAsDataURL(file);
 });
 
@@ -398,7 +363,7 @@ viewBtn.addEventListener('click', () => {
 
   const ctx = document.getElementById('overlayChartCanvas').getContext('2d');
   const ds = charts.map(c => ({
-    data: c.stats.slice(),
+    data: c.stats.map(v => Math.min(v, 10)), // cap at 10 always
     backgroundColor: hexToRGBA(c.color, FILL_ALPHA),
     borderColor: c.color,
     borderWidth: 2,
@@ -406,7 +371,6 @@ viewBtn.addEventListener('click', () => {
   }));
 
   if (radarPopup) radarPopup.destroy();
-
   radarPopup = new Chart(ctx, {
     type: 'radar',
     data: { labels: ['Power', 'Speed', 'Trick', 'Recovery', 'Defense'], datasets: ds },
@@ -417,7 +381,7 @@ viewBtn.addEventListener('click', () => {
       scales: {
         r: {
           min: 0,
-          max: Math.max(10, getGlobalScaleMax()),
+          max: 10, // cap chart to 10 always
           ticks: { display: false },
           grid: { display: false },
           angleLines: { color: '#6db5c0', lineWidth: 1 },
@@ -444,25 +408,27 @@ viewBtn.addEventListener('click', () => {
 closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
 
 /*************************
- * DOWNLOAD
+ * DOWNLOAD (guaranteed)
  *************************/
-downloadBtn.addEventListener('click', () => {
+downloadBtn.addEventListener('click', async () => {
   const box = document.getElementById('characterBox');
+  window.scrollTo(0, 0);
   downloadBtn.style.visibility = 'hidden';
   closeBtn.style.visibility = 'hidden';
 
-  html2canvas(box, {
+  await html2canvas(box, {
     scale: 2,
     useCORS: true,
-    backgroundColor: null
+    backgroundColor: null,
+    logging: false
   }).then(canvas => {
     const link = document.createElement('a');
     const cleanName = (nameInput.value || 'Unnamed').replace(/\s+/g, '_');
     link.download = `${cleanName}_CharacterChart.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-
-    downloadBtn.style.visibility = 'visible';
-    closeBtn.style.visibility = 'visible';
   });
+
+  downloadBtn.style.visibility = 'visible';
+  closeBtn.style.visibility = 'visible';
 });
