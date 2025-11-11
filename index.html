@@ -39,23 +39,30 @@
       </div>
 
       <div class="inputs">
-        <label>Power: <input type="number" id="powerInput" step="0.1" min="0" /></label>
-        <label>Speed: <input type="number" id="speedInput" step="0.1" min="0" /></label>
-        <label>Trick: <input type="number" id="trickInput" step="0.1" min="0" /></label>
-        <label>Recovery: <input type="number" id="recoveryInput" step="0.1" min="0" /></label>
-        <label>Defense: <input type="number" id="defenseInput" step="0.1" min="0" /></label>
+        <label>Power: 
+          <input type="number" id="powerInput" step="0.1" min="0" />
+          <input type="color" id="powerColor" class="axisColorPicker" value="#92dfec" />
+        </label>
+        <label>Speed: 
+          <input type="number" id="speedInput" step="0.1" min="0" />
+          <input type="color" id="speedColor" class="axisColorPicker" value="#92dfec" />
+        </label>
+        <label>Trick: 
+          <input type="number" id="trickInput" step="0.1" min="0" />
+          <input type="color" id="trickColor" class="axisColorPicker" value="#92dfec" />
+        </label>
+        <label>Recovery: 
+          <input type="number" id="recoveryInput" step="0.1" min="0" />
+          <input type="color" id="recoveryColor" class="axisColorPicker" value="#92dfec" />
+        </label>
+        <label>Defense: 
+          <input type="number" id="defenseInput" step="0.1" min="0" />
+          <input type="color" id="defenseColor" class="axisColorPicker" value="#92dfec" />
+        </label>
 
         <label>Ability Color: <input type="color" id="colorPicker" value="#92dfec" /></label>
 
         <button id="multiColorBtn">Multi-color</button>
-        <div id="axisColors">
-          <label>Power Color: <input type="color" id="powerColor" value="#92dfec" /></label>
-          <label>Speed Color: <input type="color" id="speedColor" value="#92dfec" /></label>
-          <label>Trick Color: <input type="color" id="trickColor" value="#92dfec" /></label>
-          <label>Recovery Color: <input type="color" id="recoveryColor" value="#92dfec" /></label>
-          <label>Defense Color: <input type="color" id="defenseColor" value="#92dfec" /></label>
-        </div>
-
         <button id="addChartBtn">Add Chart</button>
         <div id="chartButtons"></div>
 
