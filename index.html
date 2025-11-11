@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UnOrdinary Ability Chart Maker</title>
 
-  <!-- Local Carlito Font -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- ✅ Use Carlito font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Carlito&display=swap" rel="stylesheet">
 
-  <!-- Libraries -->
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -19,15 +19,15 @@
       <div class="header-with-info">
         <div class="title-block">
           <h1>UnOrdinary Ability Chart Maker</h1>
-          <div class="subtitle">By Atlas Skies</div>
-        </div>
-
-        <!-- Hover Info -->
-        <div class="info-container">
-          <div class="info-icon">i</div>
-          <div class="tooltip">
-            Credit to Atlas Skies would be greatly appreciated, but not necessary.<br>
-            If you're Uru-Chan, I love the comic — feel free to use this, lol.
+          <div class="subtitle">
+            By Atlas Skies
+            <button class="info-icon" type="button" aria-expanded="false" aria-label="Credits info">
+              ℹ️
+              <span class="tooltip-text" role="tooltip">
+                Credit to Atlas Skies would be greatly appreciated, but not necessary.<br>
+                If you're Uru-Chan, I love the comic — feel free to use this, lol.
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -47,7 +47,6 @@
         <label>Trick: <input type="number" id="trickInput" step="0.1" min="0"></label>
         <label>Recovery: <input type="number" id="recoveryInput" step="0.1" min="0"></label>
         <label>Defense: <input type="number" id="defenseInput" step="0.1" min="0"></label>
-
         <label>Ability Color: <input type="color" id="colorPicker" value="#92dfec"></label>
 
         <button id="multiColorBtn">Multi-color</button>
@@ -59,13 +58,14 @@
           <label>Defense Color: <input type="color" id="defenseColor" value="#92dfec"></label>
         </div>
 
+        <button id="addChartBtn">Add Chart</button>
+        <div id="chartButtons"></div>
+
         <button id="viewBtn">View Character Chart</button>
       </div>
     </div>
 
-    <div class="chart-area">
-      <canvas id="radarChart1"></canvas>
-    </div>
+    <div class="chart-area" id="chartArea"></div>
   </div>
 
   <!-- Overlay -->
@@ -74,9 +74,9 @@
       <button id="closeBtn" class="close-btn">×</button>
 
       <div class="image-section">
-        <div class="image-wrapper">
+        <div class="overlay-img-wrap">
           <img id="overlayImg" class="overlay-img" alt="Character Image">
-          <div class="watermark">AS</div>
+          <div class="img-watermark">AS</div>
         </div>
         <div class="text-box">
           <b>Name:</b> <span id="overlayName">-</span><br>
@@ -86,7 +86,7 @@
       </div>
 
       <div class="overlay-chart">
-        <canvas id="radarChart2"></canvas>
+        <canvas id="overlayChartCanvas"></canvas>
       </div>
 
       <button id="downloadBtn">Download Character Chart</button>
@@ -94,5 +94,28 @@
   </div>
 
   <script src="script.js"></script>
+
+  <!-- Tooltip toggle for mobile devices -->
+  <script>
+    (function () {
+      const infoBtn = document.querySelector('.info-icon');
+      if (!infoBtn) return;
+
+      const toggle = (open) => {
+        infoBtn.classList.toggle('open', open);
+        infoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+
+      infoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggle(!infoBtn.classList.contains('open'));
+      });
+
+      document.addEventListener('click', () => toggle(false));
+      infoBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggle(false);
+      });
+    })();
+  </script>
 </body>
 </html>
