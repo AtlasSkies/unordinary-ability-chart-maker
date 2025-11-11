@@ -52,6 +52,24 @@ h1 {
   font-size: 14px;
   color: #666;
   margin-top: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* ℹ️ Hover Info Icon */
+.info-icon {
+  font-style: normal;
+  margin-left: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #4e4e4e;
+  transition: color 0.2s ease;
+}
+
+.info-icon:hover {
+  color: #8747e6;
 }
 
 .upload-img {
@@ -197,13 +215,14 @@ button:hover {
   border-radius: 6px;
 }
 
+/* Watermark (AS) — 5% opacity */
 .img-watermark {
   position: absolute;
   bottom: 8px;
   left: 10px;
   font-size: 12px;
   font-weight: bold;
-  color: rgba(0, 0, 0, 0.03); /* 3% opacity */
+  color: rgba(0, 0, 0, 0.05);
   user-select: none;
   pointer-events: none;
   letter-spacing: 1px;
@@ -245,6 +264,7 @@ button:hover {
     padding: 15px; gap: 20px;
     overflow-y: auto;
   }
+
   .overlay-img {
     width: 70vw; height: auto; max-height: 35vh;
   }
