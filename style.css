@@ -1,3 +1,6 @@
+/* ============================
+   LOCAL CARLITO FONT FAMILY
+============================ */
 @font-face {
   font-family: 'Carlito';
   src: url('fonts/Carlito-Regular.ttf') format('truetype');
@@ -30,6 +33,9 @@
   font-display: swap;
 }
 
+/* ============================
+   GLOBAL STYLES
+============================ */
 body {
   font-family: 'Carlito', Optima, Avenir, "Avenir Next", "Gill Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background: #f0f8fc;
@@ -90,6 +96,7 @@ h1 {
   gap: 5px;
 }
 
+/* Tooltip container for the "i" */
 .info-container {
   position: relative;
   display: inline-block;
@@ -108,6 +115,7 @@ h1 {
   color: #8747e6;
 }
 
+/* Tooltip content */
 .tooltip {
   position: absolute;
   top: 125%;
@@ -277,19 +285,17 @@ button:hover {
   border-radius: 6px;
 }
 
-/* ✅ Watermark (AS) now 1/4 size (12px) */
+/* Watermark (AS) */
 .img-watermark {
   position: absolute;
-  bottom: 10px;
-  left: 12px;
+  bottom: 8px;
+  left: 10px;
   font-size: 12px;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.05);
   user-select: none;
   pointer-events: none;
-  letter-spacing: 2px;
-  font-family: 'Carlito', sans-serif;
-  z-index: 2;
+  letter-spacing: 1px;
 }
 
 .text-box {
@@ -303,12 +309,13 @@ button:hover {
   text-align: center;
 }
 
+/* ✅ 25% smaller radar chart in popup */
 .overlay-chart {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: clamp(280px, 40vw, 450px);
-  height: clamp(280px, 40vw, 450px);
+  width: clamp(210px, 30vw, 340px);
+  height: clamp(210px, 30vw, 340px);
 }
 
 #downloadBtn {
