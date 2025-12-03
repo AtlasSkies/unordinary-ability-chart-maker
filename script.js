@@ -29,18 +29,6 @@ function makeConicGradient(chart, axisColors, alpha = FILL_ALPHA) {
   return grad;
 }
 
-/**
- * Get the color that axis titles should use.
- * Always use the selected ability color of the FIRST chart (charts[0]),
- * falling back to BASE_COLOR if needed.
- */
-function getFirstAbilityColor() {
-  if (Array.isArray(charts) && charts.length > 0) {
-    return charts[0].color || BASE_COLOR;
-  }
-  return BASE_COLOR;
-}
-
 /*************************
  * PLUGINS
  *************************/
@@ -109,36 +97,27 @@ const axisTitlesPlugin = {
       r = chart.scales.r,
       labels = chart.data.labels;
     if (!labels) return;
-
     const isPopup = chart.canvas.closest('#overlay') !== null;
     const cx = r.xCenter,
       cy = r.yCenter,
       base = -Math.PI / 2,
       baseRadius = r.drawingArea * 1.1;
-
-    // 🔹 Use the first chart's ability color for all axis titles
-    const axisColor = getFirstAbilityColor();
-
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
-    ctx.strokeStyle = axisColor;   // <- was '#8747e6'
+    ctx.strokeStyle = '#8747e6';
     ctx.fillStyle = 'white';
     ctx.lineWidth = 4;
-
     labels.forEach((label, i) => {
       const a = base + (i * 2 * Math.PI / labels.length);
       const x = cx + baseRadius * Math.cos(a);
       let y = cy + baseRadius * Math.sin(a);
-
       if (i === 0) y -= 5;
       if (isPopup && (i === 1 || i === 4)) y -= 25;
-
       ctx.strokeText(label, x, y);
       ctx.fillText(label, x, y);
     });
-
     ctx.restore();
   }
 };
@@ -217,4 +196,239 @@ function makeRadar(ctx, color, withBackground = false) {
   });
 }
 
-/* … the rest of your code (addChart, selectChart, refreshAll, popup, etc.) stays the same … */
+/*************************
+ * DOM
+ *************************/
+const chartArea = document.getElementById('chartArea'),
+  addChartBtn = document.getElementById('addChartBtn'),
+  chartButtons = document.getElementById('chartButtons'),
+  powerInput = document.getElementById('powerInput'),
+  speedInput = document.getElementById('speedInput'),
+  trickInput = document.getElementById('trickInput'),
+  recoveryInput = document.getElementById('recoveryInput'),
+  defenseInput = document.getElementById('defenseInput'),
+  colorPicker = document.getElementById('colorPicker'),
+  multiColorBtn = document.getElementById('multiColorBtn'),
+  axisColorsDiv = document.getElementById('axisColors'),
+  axisColorPickers = [
+    document.getElementById('powerColor'),
+    document.getElementById('speedColor'),
+    document.getElementById('trickColor'),
+    document.getElementById('recoveryColor'),
+    document.getElementById('defenseColor')
+  ],
+  viewBtn = document.getElementById('viewBtn'),
+  overlay = document.getElementById('overlay'),
+  closeBtn = document.getElementById('closeBtn'),
+  downloadBtn = document.getElementById('downloadBtn'),
+  uploadedImg = document.getElementById('uploadedImg'),
+  imgInput = document.getElementById('imgInput'),
+  overlayImg = document.getElementById('overlayImg'),
+  overlayName = document.getElementById('overlayName'),
+  overlayAbility = document.getElementById('overlayAbility'),
+  overlayLevel = document.getElementById('overlayLevel'),
+  nameInput = document.getElementById('nameInput'),
+  abilityInput = document.getElementById('abilityInput'),
+  levelInput = document.getElementById('levelInput');
+
+/*************************
+ * INIT
+ *************************/
+window.addEventListener('load', () => {
+  addChart();
+  selectChart(0);
+  refreshAll();
+});
+
+/*************************
+ * ADD / SELECT
+ *************************/
+function addChart() {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'layer';
+  canvas.style.position = 'absolute';
+  canvas.style.inset = '0';
+  canvas.style.zIndex = charts.length + '';
+  chartArea.appendChild(canvas);
+  const color =
+    charts.length === 0
+      ? BASE_COLOR
+      : `hsl(${Math.floor(Math.random() * 360)},70%,55%)`;
+  const chart = makeRadar(canvas.getContext('2d'), color, false);
+  const cObj = {
+    chart,
+    canvas,
+    color,
+    stats: [0, 0, 0, 0, 0],
+    multi: false,
+    axis: axisColorPickers.map(p => p.value)
+  };
+  charts.push(cObj);
+  const idx = charts.length - 1;
+  const btn = document.createElement('button');
+  btn.textContent = `Select Chart ${idx + 1}`;
+  btn.addEventListener('click', () => selectChart(idx));
+  chartButtons.appendChild(btn);
+}
+
+function selectChart(index) {
+  activeIndex = index;
+  chartButtons.querySelectorAll('button').forEach((b, i) => {
+    b.style.backgroundColor = i === index ? '#6db5c0' : '#92dfec';
+    b.style.color = i === index ? '#fff' : '#000';
+  });
+  const c = charts[index];
+  [powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach(
+    (el, i) => (el.value = c.stats[i])
+  );
+  colorPicker.value = c.color;
+  multiColorBtn.textContent = c.multi ? 'Single-color' : 'Multi-color';
+  axisColorsDiv.style.display = c.multi ? 'flex' : 'none';
+}
+
+/*************************
+ * UPDATE
+ *************************/
+function refreshAll() {
+  charts.forEach(obj => {
+    const ds = obj.chart.data.datasets[0];
+    const fill = obj.multi
+      ? makeConicGradient(obj.chart, obj.axis, FILL_ALPHA)
+      : hexToRGBA(obj.color, FILL_ALPHA);
+    ds.data = obj.stats.map(v => Math.min(v, 10)); // cap at 10
+    ds.borderColor = obj.color;
+    ds.pointBorderColor = obj.color;
+    ds.backgroundColor = fill;
+    obj.chart.update();
+  });
+}
+
+function refreshActiveFromInputs() {
+  const c = charts[activeIndex];
+  c.stats = [
+    +powerInput.value || 0,
+    +speedInput.value || 0,
+    +trickInput.value || 0,
+    +recoveryInput.value || 0,
+    +defenseInput.value || 0
+  ];
+  c.color = colorPicker.value;
+  c.axis = axisColorPickers.map(p => p.value);
+  refreshAll();
+}
+
+/*************************
+ * LISTENERS
+ *************************/
+addChartBtn.addEventListener('click', addChart);
+[powerInput, speedInput, trickInput, recoveryInput, defenseInput].forEach(el =>
+  el.addEventListener('input', refreshActiveFromInputs)
+);
+colorPicker.addEventListener('input', () => {
+  charts[activeIndex].color = colorPicker.value;
+  refreshAll();
+});
+axisColorPickers.forEach(p =>
+  p.addEventListener('input', () => {
+    if (charts[activeIndex].multi) {
+      charts[activeIndex].axis = axisColorPickers.map(p => p.value);
+      refreshAll();
+    }
+  })
+);
+multiColorBtn.addEventListener('click', () => {
+  const c = charts[activeIndex];
+  c.multi = !c.multi;
+  multiColorBtn.textContent = c.multi ? 'Single-color' : 'Multi-color';
+  axisColorsDiv.style.display = c.multi ? 'flex' : 'none';
+  refreshAll();
+});
+imgInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => (uploadedImg.src = ev.target.result);
+  r.readAsDataURL(file);
+});
+
+/*************************
+ * POPUP
+ *************************/
+viewBtn.addEventListener('click', () => {
+  overlay.classList.remove('hidden');
+  overlayImg.src = uploadedImg.src;
+  overlayName.textContent = nameInput.value || '-';
+  overlayAbility.textContent = abilityInput.value || '-';
+  overlayLevel.textContent = levelInput.value || '-';
+
+  const ctx = document.getElementById('overlayChartCanvas').getContext('2d');
+  const ds = charts.map(c => ({
+    data: c.stats.map(v => Math.min(v, 10)), // cap at 10 always
+    backgroundColor: hexToRGBA(c.color, FILL_ALPHA),
+    borderColor: c.color,
+    borderWidth: 2,
+    pointRadius: 0
+  }));
+
+  if (radarPopup) radarPopup.destroy();
+  radarPopup = new Chart(ctx, {
+    type: 'radar',
+    data: { labels: ['Power', 'Speed', 'Trick', 'Recovery', 'Defense'], datasets: ds },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      layout: { padding: { top: 25, bottom: 25, left: 10, right: 10 } },
+      scales: {
+        r: {
+          min: 0,
+          max: 10, // cap chart to 10 always
+          ticks: { display: false },
+          grid: { display: false },
+          angleLines: { color: '#6db5c0', lineWidth: 1 },
+          pointLabels: { color: 'transparent' }
+        }
+      },
+      customBackground: { enabled: true },
+      plugins: { legend: { display: false } }
+    },
+    plugins: [radarBackgroundPlugin, axisTitlesPlugin]
+  });
+
+  requestAnimationFrame(() => {
+    radarPopup.data.datasets.forEach((dataset, i) => {
+      const src = charts[i];
+      dataset.backgroundColor = src.multi
+        ? makeConicGradient(radarPopup, src.axis, FILL_ALPHA)
+        : hexToRGBA(src.color, FILL_ALPHA);
+    });
+    radarPopup.update();
+  });
+});
+
+closeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
+
+/*************************
+ * DOWNLOAD (guaranteed)
+ *************************/
+downloadBtn.addEventListener('click', async () => {
+  const box = document.getElementById('characterBox');
+  window.scrollTo(0, 0);
+  downloadBtn.style.visibility = 'hidden';
+  closeBtn.style.visibility = 'hidden';
+
+  await html2canvas(box, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: null,
+    logging: false
+  }).then(canvas => {
+    const link = document.createElement('a');
+    const cleanName = (nameInput.value || 'Unnamed').replace(/\s+/g, '_');
+    link.download = `${cleanName}_CharacterChart.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  downloadBtn.style.visibility = 'visible';
+  closeBtn.style.visibility = 'visible';
+});
