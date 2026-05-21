@@ -515,36 +515,30 @@ downloadBtn.addEventListener('click', async () => {
 });
 
 /*************************
- * DOWNLOAD GIF
+ * DOWNLOAD GIF (pure-JS encoder, no workers)
  *************************/
 document.getElementById('downloadGifBtn').addEventListener('click', async () => {
   const btn = document.getElementById('downloadGifBtn');
   btn.textContent = 'Generating…';
   btn.disabled = true;
 
-  // Animation params
-  const DURATION_MS  = 1000;   // grow animation: 1 second
-  const REPEAT_DELAY = 5000;   // pause between loops (GIF delay on last frame)
-  const FPS          = 30;
+  const DURATION_MS  = 1000;
+  const REPEAT_DELAY = 5000;
+  const FPS          = 24;
   const TOTAL_FRAMES = Math.round(FPS * (DURATION_MS / 1000));
-  const SIZE         = 500;    // off-screen canvas size
+  const SIZE         = 400;
 
-  // easeOutCubic: fast start, slow end
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-  // Grab current chart data
   const targetStats = charts.map(c => c.stats.map(v => Math.min(v, 10)));
   const colors      = charts.map(c => c.color);
   const axisColors  = charts.map(c => c.axis);
   const multiFlags  = charts.map(c => c.multi);
 
-  // Create an off-screen canvas + a temporary Chart.js radar chart
   const offCanvas = document.createElement('canvas');
-  offCanvas.width  = SIZE;
-  offCanvas.height = SIZE;
+  offCanvas.width = offCanvas.height = SIZE;
   const offCtx = offCanvas.getContext('2d');
 
-  // Build datasets at fraction 0
   function buildDatasets(fraction) {
     return targetStats.map((stats, ci) => ({
       data: stats.map(v => v * fraction),
@@ -555,7 +549,7 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
     }));
   }
 
-  // Build the off-screen chart once
+  // Temporarily override BASE_COLOR gradient to use white-center for GIF
   let offChart = new Chart(offCtx, {
     type: 'radar',
     data: {
@@ -566,7 +560,7 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
       responsive: false,
       maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 48, bottom: 48, left: 48, right: 48 } },
+      layout: { padding: { top: 52, bottom: 52, left: 52, right: 52 } },
       scales: {
         r: {
           min: 0, max: 10,
@@ -582,61 +576,181 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
     plugins: [radarBackgroundPlugin, axisTitlesPlugin]
   });
 
-  // gif.js setup — use inline worker source to avoid CORS issues with CDN
-  const gif = new GIF({
-    workers: 2,
-    quality: 8,
-    width: SIZE,
-    height: SIZE,
-    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
-    repeat: 0  // loop forever (delay handled by last frame)
-  });
+  const encoder = new GifEncoder(SIZE, SIZE);
 
-  // Render each frame
+  // Use a temporary canvas to composite white bg + chart
+  const frameCanvas = document.createElement('canvas');
+  frameCanvas.width = frameCanvas.height = SIZE;
+  const fc = frameCanvas.getContext('2d');
+
   for (let f = 0; f <= TOTAL_FRAMES; f++) {
-    const t        = f / TOTAL_FRAMES;
-    const fraction = easeOutCubic(t);
-
-    // Update datasets
+    const fraction = easeOutCubic(f / TOTAL_FRAMES);
     offChart.data.datasets = buildDatasets(fraction);
-
-    // Apply multi-color gradients after chart renders
     offChart.data.datasets.forEach((ds, ci) => {
-      if (multiFlags[ci]) {
-        ds.backgroundColor = makeConicGradient(offChart, axisColors[ci], FILL_ALPHA);
-      }
+      if (multiFlags[ci]) ds.backgroundColor = makeConicGradient(offChart, axisColors[ci], FILL_ALPHA);
     });
+    offChart.update('none');
 
-    offChart.update('none');  // no animation, instant
-
-    // White background for GIF frame
-    const frameCanvas = document.createElement('canvas');
-    frameCanvas.width  = SIZE;
-    frameCanvas.height = SIZE;
-    const fc = frameCanvas.getContext('2d');
     fc.fillStyle = '#ffffff';
     fc.fillRect(0, 0, SIZE, SIZE);
     fc.drawImage(offCanvas, 0, 0);
 
-    // Last frame gets the long pause (repeat delay); others get normal frame delay
+    const imageData = fc.getImageData(0, 0, SIZE, SIZE);
     const delay = f === TOTAL_FRAMES ? REPEAT_DELAY : Math.round(1000 / FPS);
-    gif.addFrame(fc, { copy: true, delay });
+    encoder.addFrame(imageData, delay);
   }
 
   offChart.destroy();
 
-  gif.on('finished', blob => {
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const name = (nameInput.value || 'Unnamed').replace(/\s+/g, '_');
-    link.download = name + '_AbilityChart.gif';
-    link.href     = url;
-    link.click();
-    URL.revokeObjectURL(url);
+  // Encode synchronously — may take a moment
+  const blob = encoder.getBlob();
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const name = (nameInput.value || 'Unnamed').replace(/\s+/g, '_');
+  link.download = name + '_AbilityChart.gif';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
 
-    btn.textContent = '⚡ Download GIF';
-    btn.disabled    = false;
+  btn.textContent = '⬡ Download GIF';
+  btn.disabled    = false;
+});
+
+
+/*************************
+ * CHARACTER DESCRIPTION POPUP
+ *************************/
+const charDescBtn    = document.getElementById('charDescBtn');
+const descOverlay    = document.getElementById('descOverlay');
+const descCloseBtn   = document.getElementById('descCloseBtn');
+const descImg        = document.getElementById('descImg');
+const descAbility    = document.getElementById('descAbility');
+const descLevel      = document.getElementById('descLevel');
+const descText       = document.getElementById('descText');
+const charDescInput  = document.getElementById('charDescInput');
+
+let descMiniChart = null;
+
+// Mini radar plugin: black bg, white border, short labels
+const miniBackgroundPlugin = {
+  id: 'miniBackground',
+  beforeDatasetsDraw(chart) {
+    const r = chart.scales.r, ctx = chart.ctx;
+    const cx = r.xCenter, cy = r.yCenter, radius = r.drawingArea;
+    const N = 5, start = -Math.PI / 2;
+    ctx.save();
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const a = start + i * 2 * Math.PI / N;
+      i === 0 ? ctx.moveTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a))
+              : ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#000000';
+    ctx.fill();
+    ctx.restore();
+  },
+  afterDatasetsDraw(chart) {
+    const r = chart.scales.r, ctx = chart.ctx;
+    const cx = r.xCenter, cy = r.yCenter, radius = r.drawingArea;
+    const N = 5, start = -Math.PI / 2;
+    ctx.save();
+    // radial lines
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const a = start + i * 2 * Math.PI / N;
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // outer border
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const a = start + i * 2 * Math.PI / N;
+      i === 0 ? ctx.moveTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a))
+              : ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+    }
+    ctx.closePath();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+const miniAxisPlugin = {
+  id: 'miniAxis',
+  afterDraw(chart) {
+    const ctx = chart.ctx, r = chart.scales.r;
+    const labels = ['Pow', 'Spd', 'Trk', 'Rec', 'Def'];
+    const cx = r.xCenter, cy = r.yCenter, base = -Math.PI / 2;
+    const labelR = r.drawingArea * 1.22;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 11px Candara';
+    ctx.fillStyle = '#ffffff';
+    labels.forEach((lbl, i) => {
+      const a = base + i * 2 * Math.PI / 5;
+      const x = cx + labelR * Math.cos(a);
+      let y = cy + labelR * Math.sin(a);
+      ctx.fillText(lbl, x, y);
+    });
+    ctx.restore();
+  }
+};
+
+charDescBtn.addEventListener('click', () => {
+  descOverlay.classList.remove('hidden');
+  descImg.src = uploadedImg.src;
+  descAbility.textContent = abilityInput.value || '—';
+  descLevel.textContent   = levelInput.value   || '—';
+  descText.textContent    = charDescInput.value || '';
+
+  // Build mini chart
+  const miniCtx = document.getElementById('descChartCanvas').getContext('2d');
+  const ds = charts.map(c => ({
+    data: c.stats.map(v => Math.min(v, 10)),
+    backgroundColor: hexToRGBA(c.color, FILL_ALPHA),
+    borderColor: c.color,
+    borderWidth: 1.5,
+    pointRadius: 0
+  }));
+
+  if (descMiniChart) descMiniChart.destroy();
+  descMiniChart = new Chart(miniCtx, {
+    type: 'radar',
+    data: { labels: ['Pow','Spd','Trk','Rec','Def'], datasets: ds },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      animation: false,
+      layout: { padding: { top: 18, bottom: 18, left: 18, right: 18 } },
+      scales: {
+        r: {
+          min: 0, max: 10,
+          ticks: { display: false },
+          grid: { display: false },
+          angleLines: { display: false },
+          pointLabels: { color: 'transparent' }
+        }
+      },
+      plugins: { legend: { display: false } }
+    },
+    plugins: [miniBackgroundPlugin, miniAxisPlugin]
   });
 
-  gif.render();
+  requestAnimationFrame(() => {
+    descMiniChart.data.datasets.forEach((dataset, i) => {
+      const src = charts[i];
+      dataset.backgroundColor = src.multi
+        ? makeConicGradient(descMiniChart, src.axis, FILL_ALPHA)
+        : hexToRGBA(src.color, FILL_ALPHA);
+    });
+    descMiniChart.update();
+  });
 });
+
+descCloseBtn.addEventListener('click', () => descOverlay.classList.add('hidden'));

@@ -598,3 +598,142 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   .overlay-img { width: 60vw; height: auto; max-height: 30vh; }
   .text-box { position: static; transform: none; width: 100%; margin-top: 10px; }
 }
+
+textarea#charDescInput {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 6px 8px;
+  font-family: 'Carlito', sans-serif;
+  font-size: 12.5px;
+  font-style: italic;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 60px;
+}
+textarea#charDescInput:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 2px rgba(61,184,207,0.15);
+}
+.desc-label {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 4px;
+  font-style: normal;
+}
+
+/* ============================
+   CHARACTER DESCRIPTION OVERLAY
+============================ */
+#descOverlay .desc-box {
+  background: #1a1a2e;
+  border: none;
+  width: clamp(600px, 75vw, 960px);
+  height: clamp(340px, 55vh, 560px);
+  border-radius: 14px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.7);
+  animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
+}
+
+/* Left: full image with mini chart overlaid at bottom */
+.desc-left {
+  flex: 0 0 42%;
+  position: relative;
+  overflow: hidden;
+}
+
+.desc-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.desc-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Mini radar sits over bottom portion of image */
+.desc-mini-chart {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52%;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 70%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.desc-mini-chart canvas {
+  width: 140px !important;
+  height: 140px !important;
+}
+
+/* Right: white-bordered info panel */
+.desc-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 32px;
+  background: #1a1a2e;
+}
+
+.desc-info-border {
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  padding: 24px 28px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 180px;
+  justify-content: center;
+}
+
+.desc-ability-block {
+  text-align: center;
+}
+
+.desc-ability-line {
+  font-family: 'Carlito', sans-serif;
+  font-size: 17px;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 2px 0;
+  letter-spacing: 0.02em;
+}
+
+.desc-ability-line em {
+  font-style: italic;
+  color: var(--accent3);
+  font-weight: normal;
+}
+
+.desc-text {
+  font-family: 'Carlito', sans-serif;
+  font-size: 13.5px;
+  font-style: italic;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
