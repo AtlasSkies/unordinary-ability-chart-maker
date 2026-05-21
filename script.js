@@ -42,8 +42,8 @@ const radarBackgroundPlugin = {
     const N = chart.data.labels.length, start = -Math.PI / 2;
 
     const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    gradient.addColorStop(0, '#f8fcff');
-    gradient.addColorStop(0.33, BASE_COLOR);
+    gradient.addColorStop(0, '#1e3040');
+    gradient.addColorStop(0.4, '#1a3d4f');
     gradient.addColorStop(1, BASE_COLOR);
 
     ctx.save();
@@ -76,7 +76,7 @@ const radarBackgroundPlugin = {
       ctx.moveTo(cx, cy);
       ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = '#35727d';
+    ctx.strokeStyle = '#4a9aab';
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -89,7 +89,7 @@ const radarBackgroundPlugin = {
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = '#184046';
+    ctx.strokeStyle = '#92dfec';
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.restore();
@@ -119,7 +119,7 @@ const axisTitlesPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     ctx.strokeStyle = firstColor;
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = '#e8edf2';
     ctx.lineWidth = 4;
 
     labels.forEach((label, i) => {
@@ -161,7 +161,7 @@ const globalValueLabelsPlugin = {
 
     ctx.save();
     ctx.font = '15px Candara';
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = '#92dfec';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
@@ -206,7 +206,7 @@ function makeRadar(ctx, color, withBackground = false) {
           max: 10, // will be overridden dynamically in refreshAll()
           ticks: { display: false },
           grid: { display: false },
-          angleLines: { color: '#6db5c0', lineWidth: 1 },
+          angleLines: { color: '#3a6878', lineWidth: 1 },
           pointLabels: { color: 'transparent' }
         }
       },
@@ -438,7 +438,7 @@ viewBtn.addEventListener('click', () => {
           max: 10,              // popup stays out of 10
           ticks: { display: false },
           grid: { display: false },
-          angleLines: { color: '#6db5c0', lineWidth: 1 },
+          angleLines: { color: '#3a6878', lineWidth: 1 },
           pointLabels: { color: 'transparent' }
         }
       },
