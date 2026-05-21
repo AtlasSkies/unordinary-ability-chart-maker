@@ -522,13 +522,13 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
   btn.textContent = 'Generating…';
   btn.disabled = true;
 
-  const DURATION_MS  = 1000;
+  const DURATION_MS  = 2500;
   const REPEAT_DELAY = 5000;
   const FPS          = 24;
   const TOTAL_FRAMES = Math.round(FPS * (DURATION_MS / 1000));
   const SIZE         = 400;
 
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeOutCubic(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); } // easeOutExpo
 
   const targetStats = charts.map(c => c.stats.map(v => Math.min(v, 10)));
   const colors      = charts.map(c => c.color);
@@ -586,7 +586,7 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   for (let f = 0; f <= TOTAL_FRAMES; f++) {
-    const fraction = easeOutCubic(f / TOTAL_FRAMES);
+    const fraction = easeOutCubic(f / TOTAL_FRAMES); // fast start, slow end
     offChart.data.datasets = buildDatasets(fraction);
     offChart.data.datasets.forEach((ds, ci) => {
       if (multiFlags[ci]) ds.backgroundColor = makeConicGradient(offChart, axisColors[ci], FILL_ALPHA);
@@ -666,7 +666,7 @@ const miniBackgroundPlugin = {
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
     }
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1;
     ctx.stroke();
     // outer border
@@ -726,7 +726,7 @@ charDescBtn.addEventListener('click', () => {
 
   const ds = charts.map(c => ({
     data: c.stats.map(v => Math.min(v, 10)),
-    backgroundColor: hexToRGBA(c.color, FILL_ALPHA),
+    backgroundColor: hexToRGBA(c.color, 1.0),   // solid fill for desc popup
     borderColor: c.color,
     borderWidth: 2,
     pointRadius: 0
@@ -758,8 +758,8 @@ charDescBtn.addEventListener('click', () => {
   descMiniChart.data.datasets.forEach((dataset, i) => {
     const src = charts[i];
     dataset.backgroundColor = src.multi
-      ? makeConicGradient(descMiniChart, src.axis, FILL_ALPHA)
-      : hexToRGBA(src.color, FILL_ALPHA);
+      ? makeConicGradient(descMiniChart, src.axis, 1.0)   // solid for desc popup
+      : hexToRGBA(src.color, 1.0);
   });
   descMiniChart.update('none');
 });
