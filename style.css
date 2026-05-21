@@ -676,7 +676,7 @@ textarea#charDescInput:focus {
   bottom: 4%;
   left: 5%;
   width: 90%;
-  height: 22%;
+  height: 25%;
   z-index: 2;
   border: 2px solid #ffffff;
   border-radius: 8px;
@@ -739,16 +739,17 @@ textarea#charDescInput:focus {
   -webkit-box-orient: vertical;
 }
 
-/* Chart section: exactly 50% of bar */
+/* Chart section: square, driven by bar height */
 .desc-info-chart {
-  flex: 0 0 50%;
+  flex: 0 0 auto;
+  /* Width = height of the bar so chart is always square */
+  aspect-ratio: 1 / 1;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   padding: 4px;
 }
-
 
 .desc-info-chart canvas {
   display: block;

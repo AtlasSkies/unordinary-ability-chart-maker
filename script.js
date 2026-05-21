@@ -125,18 +125,21 @@ const axisTitlesPlugin = {
     const textFill = lum < 0.35 ? '#ffffff' : '#1e3540';
 
     const isPopup = chart.canvas.closest('#overlay') !== null;
+    const isGif   = chart.config.options._isGif === true;
     const cx = r.xCenter,
       cy = r.yCenter,
       base = -Math.PI / 2,
-      baseRadius = r.drawingArea * 1.1;
+      // GIF needs labels pushed much further out to avoid overlap with pentagon
+      baseRadius = r.drawingArea * (isGif ? 1.55 : 1.1);
 
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = 'italic 18px Candara';
+    // Slightly larger font for GIF so it reads well
+    ctx.font = isGif ? 'italic 20px Candara' : 'italic 18px Candara';
     ctx.strokeStyle = firstColor;
-    ctx.fillStyle = textFill;
-    ctx.lineWidth = 4;
+    ctx.fillStyle = isGif ? textFill : textFill;
+    ctx.lineWidth = isGif ? 5 : 4;
 
     labels.forEach((label, i) => {
       const a = base + (i * 2 * Math.PI / labels.length);
@@ -585,7 +588,8 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
       responsive: false,
       maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 90, bottom: 90, left: 90, right: 90 } },
+      _isGif: true,
+      layout: { padding: { top: 110, bottom: 110, left: 110, right: 110 } },
       scales: {
         r: {
           min: 0, max: 10,
@@ -741,10 +745,13 @@ charDescBtn.addEventListener('click', () => {
   // Destroy previous chart instance if any
   if (descMiniChart) { descMiniChart.destroy(); descMiniChart = null; }
 
-  // Replace canvas with a square one sized to the chart container height
+  // Wait one frame so the overlay is painted and getBoundingClientRect is accurate
+  requestAnimationFrame(() => {
   const oldCanvas = document.getElementById('descChartCanvas');
   const chartContainer = oldCanvas.closest('.desc-info-chart');
-  const sz = chartContainer ? Math.round(chartContainer.getBoundingClientRect().height) : 180;
+  const rect = chartContainer ? chartContainer.getBoundingClientRect() : null;
+  // Use the smaller dimension to guarantee a square
+  const sz = rect ? Math.round(Math.min(rect.width, rect.height)) : 160;
   const newCanvas = document.createElement('canvas');
   newCanvas.id     = 'descChartCanvas';
   newCanvas.width  = sz;
@@ -791,6 +798,7 @@ charDescBtn.addEventListener('click', () => {
       : hexToRGBA(src.color, 1.0);
   });
   descMiniChart.update('none');
+  }); // end requestAnimationFrame
 });
 
 descCloseBtn.addEventListener('click', () => descOverlay.classList.add('hidden'));
