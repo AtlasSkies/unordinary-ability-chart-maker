@@ -76,7 +76,8 @@ const radarBackgroundPlugin = {
       ctx.moveTo(cx, cy);
       ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = '#4a9aab';
+    const isPopup = chart.canvas.closest('#overlay') !== null;
+    ctx.strokeStyle = isPopup ? 'rgba(0,0,0,0.25)' : '#4a9aab';
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -89,8 +90,8 @@ const radarBackgroundPlugin = {
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = '#92dfec';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = isPopup ? '#1a1a1a' : '#92dfec';
+    ctx.lineWidth = isPopup ? 3.5 : 3;
     ctx.stroke();
     ctx.restore();
   }
