@@ -97,6 +97,17 @@ const radarBackgroundPlugin = {
   }
 };
 
+// Returns perceived luminance 0–1 from a hex color
+function colorLuminance(hex) {
+  if (!hex || !hex.startsWith('#')) return 0.5;
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  // sRGB luminance
+  const toLinear = c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b);
+}
+
 const axisTitlesPlugin = {
   id: 'axisTitles',
   afterDraw(chart) {
@@ -109,6 +120,10 @@ const axisTitlesPlugin = {
     const firstColor =
       (charts && charts.length > 0 && charts[0].color) ? charts[0].color : BASE_COLOR;
 
+    // If the color is dark (luminance below 0.35), use white text fill so it's readable
+    const lum = colorLuminance(firstColor);
+    const textFill = lum < 0.35 ? '#ffffff' : '#1e3540';
+
     const isPopup = chart.canvas.closest('#overlay') !== null;
     const cx = r.xCenter,
       cy = r.yCenter,
@@ -120,7 +135,7 @@ const axisTitlesPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     ctx.strokeStyle = firstColor;
-    ctx.fillStyle = '#1e3540';
+    ctx.fillStyle = textFill;
     ctx.lineWidth = 4;
 
     labels.forEach((label, i) => {
