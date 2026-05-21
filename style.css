@@ -747,8 +747,8 @@ textarea#charDescInput:focus {
   justify-content: center;
   height: 100%;
   padding: 4px;
-  border-left: 1px solid rgba(255,255,255,0.3);
 }
+
 
 .desc-info-chart canvas {
   display: block;

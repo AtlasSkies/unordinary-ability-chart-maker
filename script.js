@@ -515,6 +515,31 @@ downloadBtn.addEventListener('click', async () => {
 });
 
 /*************************
+ * GIF BORDER PLUGIN — black outer pentagon border for GIF frames
+ *************************/
+const gifBorderPlugin = {
+  id: 'gifBorder',
+  afterDatasetsDraw(chart) {
+    const r = chart.scales.r, ctx = chart.ctx;
+    const cx = r.xCenter, cy = r.yCenter, radius = r.drawingArea;
+    const N = 5, start = -Math.PI / 2;
+    ctx.save();
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const a = start + i * 2 * Math.PI / N;
+      const x = cx + radius * Math.cos(a);
+      const y = cy + radius * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+/*************************
  * DOWNLOAD GIF (pure-JS encoder, no workers)
  *************************/
 document.getElementById('downloadGifBtn').addEventListener('click', async () => {
@@ -560,7 +585,7 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
       responsive: false,
       maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 52, bottom: 52, left: 52, right: 52 } },
+      layout: { padding: { top: 90, bottom: 90, left: 90, right: 90 } },
       scales: {
         r: {
           min: 0, max: 10,
@@ -573,7 +598,7 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
       customBackground: { enabled: true },
       plugins: { legend: { display: false } }
     },
-    plugins: [radarBackgroundPlugin, axisTitlesPlugin]
+    plugins: [radarBackgroundPlugin, axisTitlesPlugin, gifBorderPlugin]
   });
 
   const encoder = new GifEncoder(SIZE, SIZE);
@@ -716,17 +741,21 @@ charDescBtn.addEventListener('click', () => {
   // Destroy previous chart instance if any
   if (descMiniChart) { descMiniChart.destroy(); descMiniChart = null; }
 
-  // Replace canvas to guarantee a clean context
+  // Replace canvas with a square one sized to the chart container height
   const oldCanvas = document.getElementById('descChartCanvas');
+  const chartContainer = oldCanvas.closest('.desc-info-chart');
+  const sz = chartContainer ? Math.round(chartContainer.getBoundingClientRect().height) : 180;
   const newCanvas = document.createElement('canvas');
   newCanvas.id     = 'descChartCanvas';
-  newCanvas.width  = 180;
-  newCanvas.height = 180;
+  newCanvas.width  = sz;
+  newCanvas.height = sz;
+  newCanvas.style.width  = sz + 'px';
+  newCanvas.style.height = sz + 'px';
   oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
 
   const ds = charts.map(c => ({
     data: c.stats.map(v => Math.min(v, 10)),
-    backgroundColor: hexToRGBA(c.color, 1.0),   // solid fill for desc popup
+    backgroundColor: hexToRGBA(c.color, 1.0),
     borderColor: c.color,
     borderWidth: 2,
     pointRadius: 0
@@ -736,10 +765,10 @@ charDescBtn.addEventListener('click', () => {
     type: 'radar',
     data: { labels: ['Pow','Spd','Trk','Rec','Def'], datasets: ds },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
+      responsive: false,
+      maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 20, bottom: 20, left: 20, right: 20 } },
+      layout: { padding: { top: 16, bottom: 16, left: 16, right: 16 } },
       scales: {
         r: {
           min: 0, max: 10,
