@@ -583,6 +583,8 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
   frameCanvas.width = frameCanvas.height = SIZE;
   const fc = frameCanvas.getContext('2d');
 
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
   for (let f = 0; f <= TOTAL_FRAMES; f++) {
     const fraction = easeOutCubic(f / TOTAL_FRAMES);
     offChart.data.datasets = buildDatasets(fraction);
@@ -590,6 +592,9 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
       if (multiFlags[ci]) ds.backgroundColor = makeConicGradient(offChart, axisColors[ci], FILL_ALPHA);
     });
     offChart.update('none');
+
+    // Yield to browser so canvas actually renders before we read pixels
+    await sleep(0);
 
     fc.fillStyle = '#ffffff';
     fc.fillRect(0, 0, SIZE, SIZE);
@@ -602,7 +607,6 @@ document.getElementById('downloadGifBtn').addEventListener('click', async () => 
 
   offChart.destroy();
 
-  // Encode synchronously — may take a moment
   const blob = encoder.getBlob();
   const url  = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -712,14 +716,12 @@ charDescBtn.addEventListener('click', () => {
   // Destroy previous chart instance if any
   if (descMiniChart) { descMiniChart.destroy(); descMiniChart = null; }
 
-  // Use a fresh canvas each time to avoid stale context issues
+  // Replace canvas to guarantee a clean context
   const oldCanvas = document.getElementById('descChartCanvas');
   const newCanvas = document.createElement('canvas');
-  newCanvas.id = 'descChartCanvas';
+  newCanvas.id     = 'descChartCanvas';
   newCanvas.width  = 180;
   newCanvas.height = 180;
-  newCanvas.style.width  = '180px';
-  newCanvas.style.height = '180px';
   oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
 
   const ds = charts.map(c => ({
@@ -734,10 +736,10 @@ charDescBtn.addEventListener('click', () => {
     type: 'radar',
     data: { labels: ['Pow','Spd','Trk','Rec','Def'], datasets: ds },
     options: {
-      responsive: false,
-      maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: true,
       animation: false,
-      layout: { padding: { top: 22, bottom: 22, left: 22, right: 22 } },
+      layout: { padding: { top: 20, bottom: 20, left: 20, right: 20 } },
       scales: {
         r: {
           min: 0, max: 10,

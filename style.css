@@ -632,95 +632,82 @@ textarea#charDescInput:focus {
 /* ============================
    CHARACTER DESCRIPTION OVERLAY
 ============================ */
-#descOverlay .desc-box {
-  background: #1a1a2e;
-  border: none;
-  width: clamp(600px, 75vw, 960px);
-  height: clamp(340px, 55vh, 560px);
-  border-radius: 14px;
+#descOverlay {
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+}
+
+.desc-box {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  width: clamp(420px, 55vw, 720px);
+  /* height driven by aspect ratio of image — we use a fixed ratio box */
+  aspect-ratio: 3/4;
+  max-height: 90vh;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 12px 60px rgba(0,0,0,0.7);
+  box-shadow: 0 12px 60px rgba(0,0,0,0.8);
   animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Left: full image with mini chart overlaid at bottom */
-.desc-left {
-  flex: 0 0 42%;
-  position: relative;
-  overflow: hidden;
-}
-
-.desc-img-wrap {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.desc-img {
+/* Full-bleed background image */
+.desc-bg-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  z-index: 0;
 }
 
-/* Mini radar sits over bottom portion of image */
-.desc-mini-chart {
+.desc-close {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 58%;
-  background: linear-gradient(to top, rgba(0,0,0,0.92) 60%, transparent 100%);
+  top: 10px; right: 14px;
+  z-index: 10;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+/* Info bar: absolute, bottom-aligned, 90% wide, 22% tall, white border */
+.desc-info-bar {
+  position: absolute;
+  bottom: 4%;
+  left: 5%;
+  width: 90%;
+  height: 22%;
+  z-index: 2;
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 0;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
 }
 
-.desc-mini-chart canvas {
-  display: block;
-  width: 180px !important;
-  height: 180px !important;
-}
-
-/* Right: white-bordered info panel */
-.desc-right {
+/* Text section: fills left, padded */
+.desc-info-text {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px 32px;
-  background: #1a1a2e;
-}
-
-.desc-info-border {
-  border: 2px solid #ffffff;
-  border-radius: 10px;
-  padding: 24px 28px;
-  width: 100%;
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  min-height: 180px;
   justify-content: center;
-}
-
-.desc-ability-block {
-  text-align: center;
+  padding: 8px 12px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .desc-ability-line {
   font-family: 'Carlito', sans-serif;
-  font-size: 17px;
+  font-size: clamp(11px, 1.4vh, 16px);
   font-weight: bold;
   color: #ffffff;
-  margin: 2px 0;
-  letter-spacing: 0.02em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .desc-ability-line em {
@@ -729,12 +716,42 @@ textarea#charDescInput:focus {
   font-weight: normal;
 }
 
+/* White divider line between level and description */
+.desc-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.6);
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
 .desc-text {
   font-family: 'Carlito', sans-serif;
-  font-size: 13.5px;
+  font-size: clamp(10px, 1.2vh, 13px);
   font-style: italic;
-  color: rgba(255,255,255,0.75);
-  text-align: center;
-  line-height: 1.6;
-  white-space: pre-wrap;
+  color: rgba(255,255,255,0.82);
+  margin: 0;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* Chart section: fixed square on the right */
+.desc-info-chart {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  height: 100%;
+  padding: 4px;
+  border-left: 1px solid rgba(255,255,255,0.3);
+}
+
+.desc-info-chart canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }

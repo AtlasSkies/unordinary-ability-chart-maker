@@ -126,28 +126,27 @@
   <!-- ── CHARACTER DESCRIPTION OVERLAY ── -->
   <div id="descOverlay" class="overlay hidden">
     <div id="descBox" class="desc-box">
-      <button id="descCloseBtn" class="close-btn">×</button>
+      <button id="descCloseBtn" class="close-btn desc-close">×</button>
 
-      <!-- Left: character image with mini chart overlaid -->
-      <div class="desc-left">
-        <div class="desc-img-wrap">
-          <img id="descImg" class="desc-img" alt="Character" />
-          <!-- Mini radar overlaid on bottom of image -->
-          <div class="desc-mini-chart">
-            <canvas id="descChartCanvas" width="160" height="160"></canvas>
-          </div>
-        </div>
-      </div>
+      <!-- Full-bleed background image -->
+      <img id="descImg" class="desc-bg-img" alt="Character" />
 
-      <!-- Right: ability info + description, white border box -->
-      <div class="desc-right">
-        <div class="desc-info-border">
-          <div class="desc-ability-block">
-            <p class="desc-ability-line">Ability: <em id="descAbility">—</em></p>
-            <p class="desc-ability-line">Level: <em id="descLevel">—</em></p>
-          </div>
+      <!-- Info bar: 90% wide, 20% tall, pinned to bottom -->
+      <div class="desc-info-bar">
+
+        <!-- Left text: ability, level, divider, description -->
+        <div class="desc-info-text">
+          <p class="desc-ability-line">Ability: <em id="descAbility">—</em></p>
+          <p class="desc-ability-line">Level: <em id="descLevel">—</em></p>
+          <div class="desc-divider"></div>
           <p id="descText" class="desc-text"></p>
         </div>
+
+        <!-- Right: mini radar chart -->
+        <div class="desc-info-chart">
+          <canvas id="descChartCanvas" width="180" height="180"></canvas>
+        </div>
+
       </div>
     </div>
   </div>
