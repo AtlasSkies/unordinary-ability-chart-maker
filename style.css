@@ -688,9 +688,9 @@ textarea#charDescInput:focus {
   overflow: hidden;
 }
 
-/* Text section: exactly 50% of bar */
+/* Text section: left 3/4 of bar */
 .desc-info-text {
-  flex: 0 0 50%;
+  flex: 0 0 75%;
   display: flex;
   flex-direction: column;
   justify-content: center;

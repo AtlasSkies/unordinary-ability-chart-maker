@@ -146,10 +146,16 @@ const axisTitlesPlugin = {
       // Extra push-out for bottom labels on popup to avoid overlap
       const extraR = isPopup && (i === 2 || i === 3) ? r.drawingArea * 0.18 : 0;
       const labelR = baseRadius + extraR;
-      const x = cx + labelR * Math.cos(a);
+      let x = cx + labelR * Math.cos(a);
       let y = cy + labelR * Math.sin(a);
       if (i === 0) y -= 5;
       if (isPopup && (i === 1 || i === 4)) y -= 25;
+      // GIF-specific fine-tuning of label positions
+      if (isGif) {
+        if (i === 0) y += 14;   // Power: nudge down
+        if (i === 1) x += 12;   // Speed: nudge right
+        if (i === 4) x -= 12;   // Defense: nudge left
+      }
       ctx.strokeText(label, x, y);
       ctx.fillText(label, x, y);
     });
