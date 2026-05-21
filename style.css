@@ -432,7 +432,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
 .character-box {
   background: var(--panel);
   border: 1px solid var(--border);
-  width: clamp(560px, 62vw, 820px);
+  width: clamp(680px, 72vw, 980px);
   min-height: 360px;
   max-height: 90vh;
   border-radius: 16px;
@@ -553,25 +553,33 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   align-items: center;
   align-self: center;
   /* Force a square — use the smaller of vw/vh so it fits on screen */
-  width:  clamp(220px, 36vh, 360px);
-  height: clamp(220px, 36vh, 360px);
+  width:  clamp(330px, 54vh, 540px);
+  height: clamp(330px, 54vh, 540px);
   flex-shrink: 0;
 }
 
 /* ============================
    DOWNLOAD BTN
 ============================ */
-#downloadBtn {
+#downloadBtn, #downloadGifBtn {
   position: absolute;
-  bottom: 14px; right: 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
+  bottom: 14px;
   border: none;
   border-radius: 7px;
   padding: 6px 14px;
   cursor: pointer;
   font-weight: bold;
   font-size: 12.5px;
+}
+#downloadBtn {
+  right: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+#downloadGifBtn {
+  right: 148px;
+  background: linear-gradient(135deg, #c87ae8, #9b4fcf);
+  color: #fff;
 }
 
 /* ============================

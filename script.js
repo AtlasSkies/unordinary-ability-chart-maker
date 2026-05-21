@@ -498,3 +498,130 @@ downloadBtn.addEventListener('click', async () => {
   downloadBtn.style.visibility = 'visible';
   closeBtn.style.visibility = 'visible';
 });
+
+/*************************
+ * DOWNLOAD GIF
+ *************************/
+document.getElementById('downloadGifBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('downloadGifBtn');
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+
+  // Animation params
+  const DURATION_MS  = 1000;   // grow animation: 1 second
+  const REPEAT_DELAY = 5000;   // pause between loops (GIF delay on last frame)
+  const FPS          = 30;
+  const TOTAL_FRAMES = Math.round(FPS * (DURATION_MS / 1000));
+  const SIZE         = 500;    // off-screen canvas size
+
+  // easeOutCubic: fast start, slow end
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  // Grab current chart data
+  const targetStats = charts.map(c => c.stats.map(v => Math.min(v, 10)));
+  const colors      = charts.map(c => c.color);
+  const axisColors  = charts.map(c => c.axis);
+  const multiFlags  = charts.map(c => c.multi);
+
+  // Create an off-screen canvas + a temporary Chart.js radar chart
+  const offCanvas = document.createElement('canvas');
+  offCanvas.width  = SIZE;
+  offCanvas.height = SIZE;
+  const offCtx = offCanvas.getContext('2d');
+
+  // Build datasets at fraction 0
+  function buildDatasets(fraction) {
+    return targetStats.map((stats, ci) => ({
+      data: stats.map(v => v * fraction),
+      backgroundColor: hexToRGBA(colors[ci], FILL_ALPHA),
+      borderColor: colors[ci],
+      borderWidth: 2,
+      pointRadius: 0
+    }));
+  }
+
+  // Build the off-screen chart once
+  let offChart = new Chart(offCtx, {
+    type: 'radar',
+    data: {
+      labels: ['Power', 'Speed', 'Trick', 'Recovery', 'Defense'],
+      datasets: buildDatasets(0)
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      animation: false,
+      layout: { padding: { top: 48, bottom: 48, left: 48, right: 48 } },
+      scales: {
+        r: {
+          min: 0, max: 10,
+          ticks: { display: false },
+          grid: { display: false },
+          angleLines: { color: '#3a6878', lineWidth: 1 },
+          pointLabels: { color: 'transparent' }
+        }
+      },
+      customBackground: { enabled: true },
+      plugins: { legend: { display: false } }
+    },
+    plugins: [radarBackgroundPlugin, axisTitlesPlugin]
+  });
+
+  // gif.js setup — use inline worker source to avoid CORS issues with CDN
+  const gif = new GIF({
+    workers: 2,
+    quality: 8,
+    width: SIZE,
+    height: SIZE,
+    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
+    repeat: 0  // loop forever (delay handled by last frame)
+  });
+
+  // Render each frame
+  for (let f = 0; f <= TOTAL_FRAMES; f++) {
+    const t        = f / TOTAL_FRAMES;
+    const fraction = easeOutCubic(t);
+
+    // Update datasets
+    offChart.data.datasets = buildDatasets(fraction);
+
+    // Apply multi-color gradients after chart renders
+    offChart.data.datasets.forEach((ds, ci) => {
+      if (multiFlags[ci]) {
+        ds.backgroundColor = makeConicGradient(offChart, axisColors[ci], FILL_ALPHA);
+      }
+    });
+
+    offChart.update('none');  // no animation, instant
+
+    // White background for GIF frame
+    const frameCanvas = document.createElement('canvas');
+    frameCanvas.width  = SIZE;
+    frameCanvas.height = SIZE;
+    const fc = frameCanvas.getContext('2d');
+    fc.fillStyle = '#ffffff';
+    fc.fillRect(0, 0, SIZE, SIZE);
+    fc.drawImage(offCanvas, 0, 0);
+
+    // Last frame gets the long pause (repeat delay); others get normal frame delay
+    const delay = f === TOTAL_FRAMES ? REPEAT_DELAY : Math.round(1000 / FPS);
+    gif.addFrame(fc, { copy: true, delay });
+  }
+
+  offChart.destroy();
+
+  gif.on('finished', blob => {
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const name = (nameInput.value || 'Unnamed').replace(/\s+/g, '_');
+    link.download = name + '_AbilityChart.gif';
+    link.href     = url;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    btn.textContent = '⚡ Download GIF';
+    btn.disabled    = false;
+  });
+
+  gif.render();
+});
