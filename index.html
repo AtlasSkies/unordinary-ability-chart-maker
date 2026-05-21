@@ -123,9 +123,6 @@
     </div>
   </div>
 
-  <script src="gif_encoder.js"></script>
-  <script src="script.js"></script>
-
   <!-- ── CHARACTER DESCRIPTION OVERLAY ── -->
   <div id="descOverlay" class="overlay hidden">
     <div id="descBox" class="desc-box">
@@ -137,7 +134,7 @@
           <img id="descImg" class="desc-img" alt="Character" />
           <!-- Mini radar overlaid on bottom of image -->
           <div class="desc-mini-chart">
-            <canvas id="descChartCanvas"></canvas>
+            <canvas id="descChartCanvas" width="160" height="160"></canvas>
           </div>
         </div>
       </div>
@@ -155,5 +152,7 @@
     </div>
   </div>
 
+  <script src="gif_encoder.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

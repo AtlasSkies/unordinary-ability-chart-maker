@@ -709,25 +709,35 @@ charDescBtn.addEventListener('click', () => {
   descLevel.textContent   = levelInput.value   || '—';
   descText.textContent    = charDescInput.value || '';
 
-  // Build mini chart
-  const miniCtx = document.getElementById('descChartCanvas').getContext('2d');
+  // Destroy previous chart instance if any
+  if (descMiniChart) { descMiniChart.destroy(); descMiniChart = null; }
+
+  // Use a fresh canvas each time to avoid stale context issues
+  const oldCanvas = document.getElementById('descChartCanvas');
+  const newCanvas = document.createElement('canvas');
+  newCanvas.id = 'descChartCanvas';
+  newCanvas.width  = 180;
+  newCanvas.height = 180;
+  newCanvas.style.width  = '180px';
+  newCanvas.style.height = '180px';
+  oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+
   const ds = charts.map(c => ({
     data: c.stats.map(v => Math.min(v, 10)),
     backgroundColor: hexToRGBA(c.color, FILL_ALPHA),
     borderColor: c.color,
-    borderWidth: 1.5,
+    borderWidth: 2,
     pointRadius: 0
   }));
 
-  if (descMiniChart) descMiniChart.destroy();
-  descMiniChart = new Chart(miniCtx, {
+  descMiniChart = new Chart(newCanvas.getContext('2d'), {
     type: 'radar',
     data: { labels: ['Pow','Spd','Trk','Rec','Def'], datasets: ds },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
+      responsive: false,
+      maintainAspectRatio: false,
       animation: false,
-      layout: { padding: { top: 18, bottom: 18, left: 18, right: 18 } },
+      layout: { padding: { top: 22, bottom: 22, left: 22, right: 22 } },
       scales: {
         r: {
           min: 0, max: 10,
@@ -742,15 +752,14 @@ charDescBtn.addEventListener('click', () => {
     plugins: [miniBackgroundPlugin, miniAxisPlugin]
   });
 
-  requestAnimationFrame(() => {
-    descMiniChart.data.datasets.forEach((dataset, i) => {
-      const src = charts[i];
-      dataset.backgroundColor = src.multi
-        ? makeConicGradient(descMiniChart, src.axis, FILL_ALPHA)
-        : hexToRGBA(src.color, FILL_ALPHA);
-    });
-    descMiniChart.update();
+  // Apply multi-color fills
+  descMiniChart.data.datasets.forEach((dataset, i) => {
+    const src = charts[i];
+    dataset.backgroundColor = src.multi
+      ? makeConicGradient(descMiniChart, src.axis, FILL_ALPHA)
+      : hexToRGBA(src.color, FILL_ALPHA);
   });
+  descMiniChart.update('none');
 });
 
 descCloseBtn.addEventListener('click', () => descOverlay.classList.add('hidden'));
