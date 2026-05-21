@@ -42,8 +42,8 @@ const radarBackgroundPlugin = {
     const N = chart.data.labels.length, start = -Math.PI / 2;
 
     const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    gradient.addColorStop(0, '#1e3040');
-    gradient.addColorStop(0.4, '#1a3d4f');
+    gradient.addColorStop(0, '#f8fcff');
+    gradient.addColorStop(0.4, BASE_COLOR);
     gradient.addColorStop(1, BASE_COLOR);
 
     ctx.save();
@@ -119,7 +119,7 @@ const axisTitlesPlugin = {
     ctx.textBaseline = 'middle';
     ctx.font = 'italic 18px Candara';
     ctx.strokeStyle = firstColor;
-    ctx.fillStyle = '#e8edf2';
+    ctx.fillStyle = '#1e3540';
     ctx.lineWidth = 4;
 
     labels.forEach((label, i) => {
@@ -161,7 +161,7 @@ const globalValueLabelsPlugin = {
 
     ctx.save();
     ctx.font = '15px Candara';
-    ctx.fillStyle = '#92dfec';
+    ctx.fillStyle = '#2e99ae';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
