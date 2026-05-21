@@ -395,7 +395,15 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   border-radius: 0 0 4px 0;
 }
 
-/* Canvas layers fill the chart area */
+/* Square inner wrapper — forces an even pentagon, 20% smaller */
+.chart-inner {
+  position: relative;
+  width:  min(calc((100vw - 310px) * 0.80), calc(100vh * 0.80));
+  height: min(calc((100vw - 310px) * 0.80), calc(100vh * 0.80));
+  flex-shrink: 0;
+}
+
+/* Canvas layers fill the square wrapper */
 .chart-area canvas.layer {
   position: absolute;
   inset: 0;

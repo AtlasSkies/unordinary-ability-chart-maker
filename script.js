@@ -125,8 +125,11 @@ const axisTitlesPlugin = {
 
     labels.forEach((label, i) => {
       const a = base + (i * 2 * Math.PI / labels.length);
-      const x = cx + baseRadius * Math.cos(a);
-      let y = cy + baseRadius * Math.sin(a);
+      // Extra push-out for bottom labels on popup to avoid overlap
+      const extraR = isPopup && (i === 2 || i === 3) ? r.drawingArea * 0.18 : 0;
+      const labelR = baseRadius + extraR;
+      const x = cx + labelR * Math.cos(a);
+      let y = cy + labelR * Math.sin(a);
       if (i === 0) y -= 5;
       if (isPopup && (i === 1 || i === 4)) y -= 25;
       ctx.strokeText(label, x, y);
@@ -266,12 +269,20 @@ window.addEventListener('load', () => {
  * ADD / SELECT
  *************************/
 function addChart() {
+  // Ensure the square inner wrapper exists
+  let inner = chartArea.querySelector('.chart-inner');
+  if (!inner) {
+    inner = document.createElement('div');
+    inner.className = 'chart-inner';
+    chartArea.appendChild(inner);
+  }
+
   const canvas = document.createElement('canvas');
   canvas.className = 'layer';
   canvas.style.position = 'absolute';
   canvas.style.inset = '0';
   canvas.style.zIndex = charts.length + '';
-  chartArea.appendChild(canvas);
+  inner.appendChild(canvas);
 
   const color =
     charts.length === 0
@@ -432,7 +443,7 @@ viewBtn.addEventListener('click', () => {
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      layout: { padding: { top: 25, bottom: 25, left: 10, right: 10 } },
+      layout: { padding: { top: 36, bottom: 36, left: 36, right: 36 } },
       scales: {
         r: {
           min: 0,
