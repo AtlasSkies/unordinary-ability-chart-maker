@@ -447,7 +447,6 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   padding: 28px 32px 28px;
   box-shadow: 0 8px 40px rgba(120,70,30,0.18);
   overflow: visible;
-  padding-bottom: 52px;  /* room for absolutely-positioned text-box */
   animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.2);
 }
 
@@ -490,8 +489,10 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: static;   /* text-box is relative to character-box instead */
+  position: relative;
   flex-shrink: 0;
+  /* Space below image for the overlapping text box */
+  padding-bottom: 57px;
 }
 
 .overlay-img-wrap { position: relative; display: inline-block; }
@@ -532,10 +533,11 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
  */
 .text-box {
   position: absolute;
-  top: calc(28px + 220px - 19px);   /* = 229px: image bottom minus 25% of box height */
+  /* bottom -57px: 76px tall box, top 19px (25%) overlaps image, rest hangs below */
+  bottom: -57px;
   left: 50%;
   transform: translateX(-50%);
-  width: 50%;
+  width: 100%;   /* matches image width exactly */
   height: 76px;
   background: #fff;
   border: 2px solid #444;
@@ -566,8 +568,8 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   align-items: center;
   align-self: flex-start;
   /* Twice the original size */
-  width:  480px;
-  height: 480px;
+  width:  360px;
+  height: 360px;
   flex-shrink: 0;
 }
 
