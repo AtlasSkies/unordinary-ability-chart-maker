@@ -491,7 +491,9 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   align-items: center;
   position: relative;
   flex-shrink: 0;
-  /* Space below image for the overlapping text box */
+  /* Vertically center image+textbox against the 360px pentagon */
+  /* Pentagon=360, image=220, textbox-hang=32, total=252, offset=(360-252)/2=54 */
+  margin-top: 54px;
   padding-bottom: 32px;
 }
 
