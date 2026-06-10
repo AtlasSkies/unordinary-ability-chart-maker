@@ -505,6 +505,7 @@ downloadBtn.addEventListener('click', async () => {
   window.scrollTo(0, 0);
   downloadBtn.style.visibility = 'hidden';
   closeBtn.style.visibility = 'hidden';
+  document.getElementById('downloadGifBtn').style.visibility = 'hidden';
 
   await html2canvas(box, {
     scale: 2,
@@ -521,6 +522,7 @@ downloadBtn.addEventListener('click', async () => {
 
   downloadBtn.style.visibility = 'visible';
   closeBtn.style.visibility = 'visible';
+  document.getElementById('downloadGifBtn').style.visibility = 'visible';
 });
 
 /*************************
