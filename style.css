@@ -539,7 +539,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   bottom: -32px;   /* 76px box - 44px overlap = 32px below image */
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;   /* matches image width exactly */
+  width: 75%;    /* 75% of image width, centered on image */
   height: 76px;
   background: #fff;
   border: 2px solid #444;
