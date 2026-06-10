@@ -492,7 +492,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   position: relative;
   flex-shrink: 0;
   /* Space below image for the overlapping text box */
-  padding-bottom: 57px;
+  padding-bottom: 32px;
 }
 
 .overlay-img-wrap { position: relative; display: inline-block; }
@@ -534,7 +534,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
 .text-box {
   position: absolute;
   /* bottom -57px: 76px tall box, top 19px (25%) overlaps image, rest hangs below */
-  bottom: -57px;
+  bottom: -32px;   /* 76px box - 44px overlap = 32px below image */
   left: 50%;
   transform: translateX(-50%);
   width: 100%;   /* matches image width exactly */
