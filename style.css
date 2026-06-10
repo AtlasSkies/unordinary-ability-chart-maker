@@ -494,7 +494,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   /* Vertically center image+textbox against the 360px pentagon */
   /* Pentagon=360, image=220, textbox-hang=32, total=252, offset=(360-252)/2=54 */
   margin-top: 54px;
-  padding-bottom: 32px;
+  padding-bottom: 21px;
 }
 
 .overlay-img-wrap { position: relative; display: inline-block; }
@@ -536,7 +536,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
 .text-box {
   position: absolute;
   /* bottom -57px: 76px tall box, top 19px (25%) overlaps image, rest hangs below */
-  bottom: -32px;   /* 76px box - 44px overlap = 32px below image */
+  bottom: -21px;   /* 76px box - 55px overlap (25% of 220px) = 21px below image */
   left: 50%;
   transform: translateX(-50%);
   width: 75%;    /* 75% of image width, centered on image */
