@@ -731,6 +731,7 @@ button:active { transform: translateY(0); filter: brightness(0.96); }
   align-items: center;
   justify-content: center;
   padding: 4px;
+  margin-right: 24px;  /* shift left so Spd label clears the bar edge */
 }
 
 .desc-info-chart canvas {
